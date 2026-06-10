@@ -130,7 +130,7 @@ export const CodeSnippetCard: React.FC<{ code: string }> = ({ code }) => {
 ```markdown
 ---
 description: Ensure all React components developed for Remotion are Server-Side Rendering (SSR) safe and do not trigger 'window is not defined' errors in Puppeteer.
-globs: "OpenMontage/remotion-composer/src/components/**/*"
+globs: "OpenMontage/remotion-composer/src/{components,custom-templates}/**/*"
 ---
 
 # Remotion SSR 安全编程规范

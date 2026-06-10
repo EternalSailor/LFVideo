@@ -166,15 +166,16 @@ export const FadeIn: React.FC = () => {
 
 ### 2. 首选：数据驱动现成组件（符合"固定模板 + 内容替换"）
 
-A 轨组件已封装在 `OpenMontage/remotion-composer/src/components/`（`verified` 存在，名称以 `remotion-spec.md` §1.9 映射为准）：
+A 轨组件已封装在 `OpenMontage/remotion-composer/src/` 下两处——通用组件在 `components/`，模板场景/原语在 `custom-templates/`（`verified` 存在，名称以 `remotion-spec.md` §1.9 映射为准）：
 
-| 组件 | 用途 | 本期用法 |
-| :--- | :--- | :--- |
-| `@ComparisonCard` | 横向对比卡片 | 方案/路线对比 |
-| `@TerminalScene` | 终端模拟器 | 展示 `render` 命令与输出 |
-| `@ScreenshotScene` | 截图自适应变焦 | 嵌入 IDE 截图并 Zoom |
-| `charts/` | 图表卡片 | 标题里的「图表动效」归宿 |
-| `@CaptionOverlay` | 字幕高亮叠层 | 为下期「卡点」预留接口 |
+| 组件 | 实际位置 | 用途 | 本期用法 |
+| :--- | :--- | :--- | :--- |
+| `@ComparisonCard` | `components/` | 横向对比卡片 | 方案/路线对比 |
+| `@TerminalScene` | `components/` | 终端模拟器 | 展示 `render` 命令与输出 |
+| `@ScreenshotScene` | `components/` | 截图自适应变焦 | 嵌入 IDE 截图并 Zoom |
+| `charts/` | `components/` | 图表卡片 | 标题里的「图表动效」归宿 |
+| `@CaptionOverlay` | `components/` | 字幕高亮叠层 | 为下期「卡点」预留接口 |
+| `@ConceptScene` / `@SplitLayout` | `custom-templates/` | 概念卡片 / 左右分屏 | 范式与选型的对比展示 |
 
 理想用法是只改数据、不碰组件——这才是"数据驱动模板"：
 
@@ -227,7 +228,7 @@ npx remotion studio                                   # 可视化调试
 npx remotion render src/index.ts <CompositionId> out/demo.mp4
 ```
 
-> ⚠️ 仓库当前无独立 `video/` 工程，A 轨组件在 `OpenMontage/remotion-composer/`。`remotion-spec.md` 里 `video/src/template/` 的组件名属**目标态规范**，与 composer 实际组件名对不上，需录制前对齐——故命令标 `paper_spec`。
+> ⚠️ A 轨组件现集中在 `OpenMontage/remotion-composer/src/`：通用组件在 `components/`（`ComparisonCard/TerminalScene/charts/...`），模板场景/原语在 `custom-templates/`（原"目标态" `@IntroScene/@ConceptScene/@SplitLayout/@VideoSlot` 等已并入，`verified` 存在）。原计划的独立 `video/` 工程已合并进 composer。组件存在已 `verified`；但 `<CompositionId>` 与 render 命令仍须录制前核对注册，故命令仍标 `paper_spec`。
 
 ---
 
