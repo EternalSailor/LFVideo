@@ -4,15 +4,15 @@ status: draft
 source_workflow: /03-video-planning-bilibili
 upstream_inputs:
   - 02-plan/README.md (status: draft)
-  - 02-plan/tutorial.final.md (status: approved)
+  - 02-plan/tutorial.final.md (status: draft)
   - shared/docs/remotion-spec.md
 ---
 
-> ⚠️ **重做版（对齐新主线）**：本分镜已按 `tutorial.final.md` 收敛后的「教人用 Vibe Coding」两步主线重写——开场 → 选路线 → 搭引擎 → 总结。旧的「范式/帧即状态/判断层矩阵/流程即代码」结构已弃用（流程即代码/角色编排归 EP05/EP06）。上游仍为 `draft`，本稿随上游一同待人工复核后再置 `approved`。
+> ⚠️ **重做版（对齐三段主线）**：本分镜已按 `tutorial.final.md` 的「教人用 Vibe Coding」三段主线重写——开场 → 找技术路径 → 技术选型 → 技术落地 → 总结。旧的「两步/选路线·搭引擎」框架已弃用（流程即代码/角色编排归 EP05/EP06）。上游 `tutorial.final.md` 当前为 `draft`，本稿随其一同待人工复核后再置 `approved`。
 
 # ep02 B站视听编排蓝图
 
-> **本期主线**：站在"教人用 Vibe Coding"的角度讲两步——① 用 Vibe Coding 选技术路线；② 用 Vibe Coding 搭 Remotion 渲染引擎。每个 section 的 Props 文案/数据均对齐 `tutorial.final.md`。
+> **本期主线**：站在"教人用 Vibe Coding"的角度讲三步——① 找技术路径（让 AI 罗列现成路线）；② 技术选型（对约束选定 Remotion）；③ 技术落地（驱动 Remotion 按配置出片）。每个 section 的 Props 文案/数据均对齐 `tutorial.final.md`。
 
 ---
 
@@ -37,12 +37,12 @@ upstream_inputs:
 
 > 对应 `outline_sections[0]`（开场钩子），beat=`statement`，visual=`text`
 
-- **组件**：`@IntroScene`
-- **Props**：主标题"不写代码，用 Vibe Coding 搭一套能自动出片的视频渲染引擎"+ 系列副标 + 两步路线图（选路线 / 搭引擎）。
-- **承载必讲要点**：痛点（传统剪辑改一处要回时间轴重排）→ 结果先行（写成配置、改一行就重渲）→ 人设（没基础、全程 Vibe Coding）→ 两步路线图。
-- **防静止**：30s 内 5 个变化点（约每 6s）。
+- **组件**：`@IntroScene` + 极速切镜
+- **Props**：主标题"用 Vibe Coding 搭一套能自动出片的视频渲染引擎"+ 系列副标 + 三步路线图（找路径 / 选型 / 落地）。
+- **承载必讲要点**：结果先行（写成配置、一秒出片）→ 声明式数据驱动优势 → 人设（没基础、全程 Vibe Coding）→ 三步路线图。
+- **防静止（黄金 3-5 秒留存）**：前 5 秒双画面结果暴击（左改配置右出片），5-15 秒展开 IDE 配置文件与渲染视频的动态映射关系演示（展现声明式改配置即改片的优雅），15 秒后切 `@IntroScene` 粒子背景、标题与三步路线图依次浮出。
 
-### 第二段：用 Vibe Coding 选路线①——让 AI 把路都摆出来（0:30–1:20，50s）
+### 第二段：找技术路径——让 AI 把路都摆出来（0:30–1:20，50s）
 
 > 对应 `outline_sections[1]`，beat=`transformation`，visual=`mixed`
 
@@ -51,19 +51,19 @@ upstream_inputs:
 - **承载必讲要点**：让 AI 摆出多条路线、点明共同内核。
 - **拆分**：先内核（15s）后六路线阵列（35s，sub_shots 逐张入场）。
 
-### 第三段：用 Vibe Coding 选路线②——逼 AI 给"不适用+坑"，回到约束定 Remotion（1:20–3:25，约 125s）
+### 第三段：技术选型——权衡技术局限与边界，回到约束定 Remotion（1:20–3:25，约 125s）
 
 > 对应 `outline_sections[2]`，beat=`comparison`，visual=`chart`
 
-- **组件**：`@TableScene`（判断层矩阵）→ `@ConceptScene`（回到自己的约束）→ `@SplitLayout`（Remotion vs 复制粘贴 HTML）。
+- **组件**：`@TableScene`（判断层矩阵）→ `@ConceptScene`（回到自己的约束）→ `@SplitLayout`（Remotion vs 拼装 HTML 方案）。
 - **Props**：
-  - 判断层矩阵：方案 / 适合 / 不适合 / 已知坑（六条路线，重点高亮"坑"列）。
+  - 判断层矩阵：技术路线 / 适用场景 / 局限条件 / 关键约束（六条路线，重点高亮"关键约束"列）。
   - 约束卡片：固定模板换数据批量 / 让 AI 接手最稳 / 一行命令出片 / 网页生态现成。
-  - 左右对照：模板复用、让 AI 接手、长期维护、授权四维 `Remotion ✅ vs 复制粘贴 HTML ❌`；代价（React 栈 + BUSL）如实标注。
-- **承载必讲要点**：逼 AI 给"不适用+坑"、人盯坑做减法；选型理由→为什么 Remotion；vs 复制粘贴 HTML；代价如实说。
-- **B 轨**：IDE 里和 AI 对话"追问每条路的坑"的录屏（`b-ide-route-pitfalls`）。
+  - 左右对照：模板复用、AI 维护、维护性、授权四维 `Remotion ✅ vs 拼装 HTML 方案 ❌`；代价（React 栈 + BUSL）如实标注。
+- **承载必讲要点**：严谨权衡技术局限与边界、对照约束做减法；选型理由→为什么 Remotion；vs 拼装 HTML 方案；代价如实说。
+- **B 轨**：IDE 里和 AI 对话"追问每条技术路线局限性"的录屏（`b-ide-route-pitfalls`）。
 
-### 第四段：用 Vibe Coding 搭引擎①——配置分发 + 配置即内容（3:25–4:35，约 70s）
+### 第四段：技术落地——配置分发 + 配置即内容（3:25–4:35，约 70s）
 
 > 对应 `outline_sections[3]`，beat=`demonstration`，visual=`code`
 
@@ -72,10 +72,10 @@ upstream_inputs:
   - 流向图：`一份配置(cut/overlay) → Explainer 按 type 分发 → 现成组件(comparison/terminal_scene/screenshot_scene/charts/ConceptScene·SplitLayout)`。
   - 配置示例：`{"type":"comparison","title":"传统剪辑 vs 代码即视频", ...}`。
   - 左右对照：左"让 AI 从零手写 ComparisonScene.tsx ❌"、右"只填数据复用现成组件 ✅"，标注"TS 字段类型兜底，填错即编译报错"。
-- **承载必讲要点**：引擎按 type 分发；组件清单；配置即内容、让 AI 填字段别造组件、类型兜底。
+- **承载必讲要点**：引擎按 type 分发；组件清单；配置即内容、让 AI 填字段别造组件、类型兜底；自有风格组件库可在现成组件上扩、后续单独一期（一句带过）。
 - **B 轨**：IDE 里"只写一份配置喂给现成组件"的录屏（`b-ide-config-fill`）。
 
-### 第五段：用 Vibe Coding 搭引擎②——数字主持人 + 避坑 + 一行出片（4:35–5:35，约 60s）
+### 第五段：技术落地——数字主持人 + 避坑 + 一行出片（4:35–5:35，约 60s）
 
 > 对应 `outline_sections[4]`，beat=`demonstration`，visual=`code`
 
@@ -92,7 +92,7 @@ upstream_inputs:
 > 对应 `outline_sections[5]`，beat=`conclusion`，visual=`text`
 
 - **组件**：`@OutroScene`
-- **Props**：两步法回顾 + "没编程基础也能复制" + 关注引导 + 下期预告（EP03 字幕匹配：Whisper 字级时间戳驱动 `CaptionOverlay`）。
+- **Props**：三步法回顾 + "没编程基础也能复制" + 关注引导 + 下期预告（EP03 字幕匹配：Whisper 字级时间戳驱动 `CaptionOverlay`）。
 
 ---
 
@@ -117,31 +117,30 @@ upstream_inputs:
       "section_ref": "开场钩子",
       "scene_template": "@IntroScene",
       "props": {
-        "title": "不写代码，用 Vibe Coding 搭一套能自动出片的视频渲染引擎",
+        "title": "用 Vibe Coding 搭一套能自动出片的视频渲染引擎",
         "subtitle": "《Vibe Coding 造一条自动化视频生产线》EP02 · 视频渲染",
-        "roadmap": ["第一步：用 Vibe Coding 选技术路线", "第二步：用 Vibe Coding 搭 Remotion 渲染引擎"],
+        "roadmap": ["① 找技术路径", "② 技术选型", "③ 技术落地"],
         "background": "particles"
       },
       "duration_seconds": 30,
       "animation_cues": [
-        {"frame": 0, "action": "fade_in(background_particles)"},
-        {"frame": 15, "action": "spring_scale(title, 0.85→1.0)"},
-        {"frame": 180, "action": "fade_in(pain_point: 传统剪辑改一处要回时间轴重排)"},
-        {"frame": 450, "action": "fade_in(result: 写成配置，改一行就重渲)"},
-        {"frame": 720, "action": "reveal(roadmap: 选路线 / 搭引擎)"}
+        {"frame": 0, "action": "[双画面] 左改 JSON 配置, 右终端运行 1 秒出片结果先行"},
+        {"frame": 120, "action": "[代码演示] 展示 IDE 配置文件与渲染视频的映射关系"},
+        {"frame": 450, "action": "[主视觉] 粒子背景渐显，主标题弹性入场 spring_scale"},
+        {"frame": 600, "action": "[路线图] 副标题淡入，三步路线卡片依次浮现并锁定"}
       ],
       "sub_shots": [
-        {"start_seconds": 0, "action": "主副标题入场"},
-        {"start_seconds": 6, "action": "痛点一句话淡入"},
-        {"start_seconds": 15, "action": "结果先行（改一行就重渲）"},
-        {"start_seconds": 24, "action": "两步路线图展开"}
+        {"start_seconds": 0, "action": "左改配置右渲染, 1秒出片结果先行"},
+        {"start_seconds": 4, "action": "展示配置文件与画面映射演示"},
+        {"start_seconds": 15, "action": "粒子背景渐显 + 主标题入场"},
+        {"start_seconds": 20, "action": "副标题 + 三步路线图依次浮现并锁定"}
       ]
     },
     {
-      "section_ref": "选路线①·让 AI 摆出多条路线",
+      "section_ref": "找技术路径·让 AI 摆出多条路线",
       "scene_template": "@ConceptScene",
       "props": {
-        "eyebrow": "第一步：用 Vibe Coding 选路线",
+        "eyebrow": "找技术路径",
         "title": "把视频写成代码，内核都一样",
         "items": [
           {"label": "STEP 1", "title": "用代码/数据描述画面", "desc": "组件、函数、公式或脚本", "icon": "✍️"},
@@ -158,7 +157,7 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "选路线①·让 AI 摆出多条路线",
+      "section_ref": "找技术路径·让 AI 摆出多条路线",
       "scene_template": "@ConceptScene",
       "props": {
         "eyebrow": "让 AI 把路都摆出来",
@@ -188,18 +187,18 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "选路线②·逼 AI 给不适用+坑",
+      "section_ref": "技术选型·严谨权衡技术局限与边界",
       "scene_template": "@TableScene",
       "props": {
-        "title": "别只听 AI 报菜名——逼它给「不适用 + 坑」",
-        "columns": ["方案", "适合", "不适合", "已知的坑"],
+        "title": "严谨分析技术路线局限性与关键约束",
+        "columns": ["技术路线", "适用场景", "局限条件", "关键约束"],
         "rows": [
-          ["Remotion", "前端栈、复杂排版、跨期复用模板", "纯后台超长批处理", "顶层读浏览器对象打包崩；BUSL 授权"],
-          ["Motion Canvas / Revideo", "代码演示、精确时序动画", "复杂网页级排版", "组件/排版生态小，模板要自己攒"],
-          ["Manim", "数学/公式/算法可视化", "普通 UI、网页排版", "学习曲线陡、排版弱、渲染慢"],
-          ["MoviePy", "纯 Python、简单拼接、音轨闪避", "自适应排版、复杂文字动效", "文字排版繁琐、多层画布吃内存"],
-          ["PixiJS / Cocos", "游戏类复杂粒子动画", "标准网页 UI、文字对齐", "文字换行/对齐计算复杂"],
-          ["FFmpeg + 脚本", "批量转码、字幕烧录、兜底合成", "复杂动效、交互排版", "命令语法晦涩、难调试"]
+          ["Remotion", "前端栈、复杂网页排版、跨期模板复用", "纯后台超长视频批处理", "打包时读浏览器对象会崩；BUSL商业授权"],
+          ["Motion Canvas / Revideo", "代码演示、精确时序动画设计", "复杂企业级网页排版", "技术生态规模较小，模板自攒成本高"],
+          ["Manim", "数学、几何、算法可视化展示", "常规 UI 排版、标准网页排版", "学习曲线陡峭、排版弱、大场景渲染慢"],
+          ["MoviePy", "纯 Python 简单拼贴、音轨自动闪避", "复杂自适应布局、动态文字特效", "排版繁琐、多层时重度消耗内存、难以缓存"],
+          ["PixiJS / Cocos", "游戏类高性能粒子特效与交互动画", "标准网页 UI 体系、自适应文字对齐", "复杂多行文本排版与自适应计算繁琐"],
+          ["FFmpeg + 脚本", "批量转码、轻量字幕与底层音视频合并", "高精度自定义动效、复杂页面排版", "命令语法晦涩、调试与异常定位极度困难"]
         ],
         "highlight_column": 3
       },
@@ -207,20 +206,20 @@ upstream_inputs:
       "animation_cues": [
         {"frame": 0, "action": "fade_in(title+header_row)"},
         {"frame": 150, "action": "stagger_rows_in(rows, 每行约 9f)"},
-        {"frame": 750, "action": "highlight_column(已知的坑)"},
-        {"frame": 1050, "action": "highlight_row(Remotion, annotation=坑可用规则绕开)"},
+        {"frame": 750, "action": "highlight_column(关键约束)"},
+        {"frame": 1050, "action": "highlight_row(Remotion, annotation=约束可用规则文件优雅绕开)"},
         {"frame": 1500, "action": "dim(其余行, focus=Remotion)"}
       ],
       "sub_shots": [
         {"start_seconds": 0, "action": "表头入场"},
         {"start_seconds": 5, "action": "六行逐行 stagger 入场"},
-        {"start_seconds": 25, "action": "整列高亮『已知的坑』"},
-        {"start_seconds": 35, "action": "高亮 Remotion 行：坑可绕开"},
+        {"start_seconds": 25, "action": "整列高亮『关键约束』"},
+        {"start_seconds": 35, "action": "高亮 Remotion 行：约束可用规则优雅绕开"},
         {"start_seconds": 50, "action": "聚焦 Remotion，其余淡出"}
       ]
     },
     {
-      "section_ref": "选路线②·回到约束为什么选 Remotion",
+      "section_ref": "技术选型·回到约束为什么选 Remotion",
       "scene_template": "@ConceptScene",
       "props": {
         "eyebrow": "回到自己的约束，让 AI 对号入座",
@@ -247,7 +246,7 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "选路线②·Remotion vs 复制粘贴 HTML",
+      "section_ref": "技术选型·Remotion vs 复制粘贴 HTML",
       "scene_template": "@SplitLayout",
       "props": {
         "direction": "horizontal",
@@ -270,10 +269,10 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "搭引擎①·配置分发",
+      "section_ref": "技术落地①·配置分发",
       "scene_template": "@ConceptScene",
       "props": {
-        "eyebrow": "第二步：用 Vibe Coding 搭引擎",
+        "eyebrow": "技术落地",
         "title": "一份配置，自动分发成画面",
         "flow": "一份配置(cut/overlay) → Explainer 按 type 分发 → 现成组件",
         "items": [
@@ -298,7 +297,7 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "搭引擎①·配置即内容",
+      "section_ref": "技术落地①·配置即内容",
       "scene_template": "@TerminalScene",
       "props": {
         "title": "配置即内容：让 AI 填字段，别造组件",
@@ -319,7 +318,7 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "搭引擎①·配置即内容",
+      "section_ref": "技术落地①·配置即内容",
       "scene_template": "@SplitLayout",
       "props": {
         "direction": "horizontal",
@@ -342,7 +341,7 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "搭引擎②·数字主持人基础版",
+      "section_ref": "技术落地②·数字主持人基础版",
       "scene_template": "@ScreenshotScene",
       "props": {
         "title": "给视频配个 3D 主持人（基础版）：站得稳就行",
@@ -368,7 +367,7 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "搭引擎②·SSR 避坑",
+      "section_ref": "技术落地②·SSR 避坑",
       "scene_template": "@SplitLayout",
       "props": {
         "direction": "horizontal",
@@ -393,7 +392,7 @@ upstream_inputs:
       ]
     },
     {
-      "section_ref": "搭引擎②·一行出片",
+      "section_ref": "技术落地②·一行出片",
       "scene_template": "@TerminalScene",
       "props": {
         "title": "出片就是一行命令，交给 AI / 终端跑",
@@ -419,7 +418,7 @@ upstream_inputs:
       "section_ref": "结尾 CTA",
       "scene_template": "@OutroScene",
       "props": {
-        "headline": "两步法：用 Vibe Coding 选路线 + 搭引擎，没编程基础也能复制",
+        "headline": "三步法：找技术路径 + 技术选型 + 技术落地，没编程基础也能复制",
         "cta": "关注 · 下期 EP03 字幕匹配：Whisper 字级时间戳驱动 CaptionOverlay，让字幕踩着话音跳",
         "background": "gradient"
       },
