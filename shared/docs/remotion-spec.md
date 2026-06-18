@@ -36,8 +36,7 @@
 5. **真正的分镜拆分**：把一个长 scene 拆成多个 storyboard 子镜头（每个子镜头一个组件实例 + 一段口播）。
 
 **落地约定**：
-- 在 **03 视听策划**：任何 `duration_seconds > 15` 的 `scene_storyboard` 必须配套足量 `animation_cues`（约每 10–15 秒至少 1 个可见变化），或拆成多个子镜头（见 schema 可选字段 `sub_shots`）。
-- 在 **04 脚本**：长口播段的 `[画面]` 必须写出**子镜头时间线**（第几秒画面发生什么变化），并在 JSON 块该 section 填写可选字段 `visual_beats`（每个 beat 含 `at_seconds` + `action`）。
+- 在 **04 分镜口播稿**（已合并原 03 视听策划）：长口播段的 `[画面]` 必须写出**子镜头时间线**（第几秒画面发生什么变化），并在 JSON 契约块该 section 填写 `visual_beats`（每个 beat 含 `at_seconds` + `action`），或用可选字段 `sub_shots`/`animation_cues`；任何 `duration_hint_seconds > 15` 的 section 不得只配单一静止画面。
 - 经验值：中文口播约每秒 4–5 字，15 秒 ≈ 60–75 字。**口播超过 ~75 字仍只配一个静止画面 = 不合格**，必须加节拍或拆分。
 
 ---

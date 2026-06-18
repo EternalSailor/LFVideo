@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "ai-ide-workflows/schemas/04-script",
   "title": "Video Script Schema",
-  "description": "Schema for validating the 04-script structured block",
+  "description": "Schema for validating the 04-script structured block. As of the 03+04 merge, this block also carries the visual blueprint that previously lived in 03-plan-bilibili: optional top-level video_spec / zoom_crop_directives / template_tickets and per-section props / animation_cues / sub_shots. Stages 05 (B-roll) and 07 (assembly) read these directly from here.",
   "type": "object",
   "required": [
     "title",
@@ -24,6 +24,16 @@
     },
     "b_track_assets_required": { "type": "array" },
     "coverage_checklist": { "type": "object" },
+    "video_spec": {
+      "type": "object",
+      "description": "Platform video spec. Merged in from the retired 03 stage; optional for back-compat with pre-merge episodes.",
+      "required": ["aspect_ratio", "resolution", "fps"],
+      "properties": {
+        "aspect_ratio": { "type": "string", "enum": ["16:9", "9:16", "1:1"] },
+        "resolution": { "type": "string", "description": "e.g. '1920x1080'" },
+        "fps": { "type": "number" }
+      }
+    },
     "sections": {
       "type": "array",
       "minItems": 3,
@@ -34,6 +44,34 @@
           "id": { "type": "string" },
           "section_ref": { "type": "string" },
           "scene_template": { "type": "string" },
+          "props": {
+            "type": "object",
+            "description": "Static Remotion component props for this scene (merged in from the retired 03 stage). Data must align with tutorial.final.md. Optional."
+          },
+          "animation_cues": {
+            "type": "array",
+            "description": "Frame-based animation cues (alternative/legacy to visual_beats). Optional.",
+            "items": {
+              "type": "object",
+              "required": ["frame", "action"],
+              "properties": {
+                "frame": { "type": "number" },
+                "action": { "type": "string" }
+              }
+            }
+          },
+          "sub_shots": {
+            "type": "array",
+            "description": "Anti-deadtime decomposition into <=15s sub-shots (alternative to visual_beats). See shared/docs/remotion-spec.md §1.5. Optional.",
+            "items": {
+              "type": "object",
+              "required": ["start_seconds", "action"],
+              "properties": {
+                "start_seconds": { "type": "number", "minimum": 0 },
+                "action": { "type": "string" }
+              }
+            }
+          },
           "track": {
             "type": "string",
             "enum": ["A", "B", "A/B", "A+B"],
@@ -54,6 +92,43 @@
               }
             }
           }
+        }
+      }
+    },
+    "zoom_crop_directives": {
+      "type": "array",
+      "description": "B-track screen-recording zoom/crop directives consumed by stage 05 (b-roll) and 07 (assembly). Merged in from the retired 03 stage; optional.",
+      "items": {
+        "type": "object",
+        "required": ["clip_id", "timestamp_start", "timestamp_end", "focal_point"],
+        "properties": {
+          "clip_id": { "type": "string" },
+          "timestamp_start": { "type": "string", "description": "mm:ss" },
+          "timestamp_end": { "type": "string", "description": "mm:ss" },
+          "zoom_level": { "type": "number" },
+          "focal_point": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "template_tickets": {
+      "type": "array",
+      "description": "Remotion component extension tickets if new templates are needed. Merged in from the retired 03 stage; optional.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "physical_path", "props_interface", "animation_spec"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "physical_path": { "type": "string" },
+          "props_interface": { "type": "string" },
+          "animation_spec": { "type": "string" }
         }
       }
     },

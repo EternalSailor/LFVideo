@@ -1,20 +1,19 @@
 ---
-description: B轨录屏 - 按 03 视听蓝图的 zoom_crop_directives 录制 IDE/终端操作演示，产出可直接嵌入 Remotion @VideoSlot 的 B 轨素材。
+description: B轨录屏 - 按 04 分镜口播稿契约的 zoom_crop_directives 录制 IDE/终端操作演示，产出可直接嵌入 Remotion @VideoSlot 的 B 轨素材。
 ---
 
 <!-- AUTO-GENERATED from shared/workflows/05-b-roll-recording.md. Do not edit here; edit the source and run `python scripts/sync_workflows.py`. -->
 
 # B轨录屏 Workflow (05-b-roll-recording)
 
-按 03 蓝图中标注 `@VideoSlot` 的场景，录制真实 IDE / 终端操作演示。录屏素材在 07-video-assembly 阶段嵌入 `@VideoSlot` 组件；若录屏缺失，07 阶段将自动降级使用 A 轨兜底方案（`fallback_a_track`）。
+按 04 分镜口播稿契约中标注 `@VideoSlot` 的场景，录制真实 IDE / 终端操作演示。录屏素材在 07-video-assembly 阶段嵌入 `@VideoSlot` 组件；若录屏缺失，07 阶段将自动降级使用 A 轨兜底方案（`fallback_a_track`）。
 
 ---
 
 ## 前置依赖
 
 本工作流假设已完成 `/04-script-draft`，已具备：
-- 处于 `approved` 状态的 `content-library/<epNN-slug>/04-script/README.md`
-- 处于 `approved` 状态的 `content-library/<epNN-slug>/03-plan-bilibili/README.md`（含 `zoom_crop_directives` 和 `fallback_a_track`）
+- 处于 `approved` 状态的 `content-library/<epNN-slug>/04-script/README.md`（末尾 JSON 契约含 `zoom_crop_directives` 与各 section 的 `@VideoSlot` / A 轨兜底；自 03+04 合并后，视听蓝图已并入此处）
 
 如果缺少上述输入，先提示用户回到对应上游阶段。
 
@@ -24,7 +23,7 @@ description: B轨录屏 - 按 03 视听蓝图的 zoom_crop_directives 录制 IDE
 
 ### 1. 提取录屏清单
 
-从 `03-plan-bilibili/README.md` 的 JSON 校验块中提取所有 `@VideoSlot` 场景：
+从 `04-script/README.md` 末尾的 JSON 契约块中提取所有 `@VideoSlot` 场景：
 - 场景编号（如 S5a、S5b、S5c）
 - `zoom_crop_directives`：录屏时的裁剪/缩放指令
 - `src` 占位描述：录屏内容说明
@@ -114,6 +113,6 @@ source_workflow: /05-b-roll-recording
 
 ## 关联文件
 
-- 上游：`04-script-draft.md`、`03-video-planning-bilibili.md`
+- 上游：`04-script-draft.md`（已合并原 03 视听蓝图）
 - 下游：`07-video-assembly.md`
 - OpenMontage 工具：`tools/capture/screen_recorder.py`、`tools/capture/cap_recorder.py`、`tools/capture/screen_capture_selector.py`

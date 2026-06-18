@@ -40,9 +40,8 @@
 |------|---------|------|
 | [选题分析师](./content/topic-analyst(选题分析师).md) | 选题可行性判断、标题候选、受众与传播分析 | ✅ 可用 |
 | [内容策划师](./content/strategist(内容策划师).md) | 导演分镜、Demo 设计、故事大纲（苏格拉底协同） | ✅ 可用 |
-| [视听策划师](./content/visual-planner(视听策划师).md) | Remotion 组件映射、Props 接口、动画 Cue、录屏 zoom 指令 | ✅ 可用 |
-| [文案撰稿人](./content/copywriter(文案撰稿人).md) | 视频脚本、知乎文章、小红书图文 | ✅ 可用 |
-| [屏幕录制导演](./content/screen-capture-director(屏幕录制导演).md) | 按 03 蓝图录制 B 轨 IDE/终端操作演示 | ✅ 可用 |
+| [分镜口播导演](./content/script-director(分镜口播导演).md) | 一体产出「画面（Remotion 组件映射/Props/动画 Cue/录屏 zoom 指令）+ 口播台词」的分镜口播稿（合并原视听策划师 + 文案撰稿人） | ✅ 可用 |
+| [屏幕录制导演](./content/screen-capture-director(屏幕录制导演).md) | 按 04 分镜口播稿录制 B 轨 IDE/终端操作演示 | ✅ 可用 |
 | [语音合成工程师](./content/tts-engineer(语音合成工程师).md) | TTS 引擎选型、口播文本转语音音频 | ✅ 可用 |
 | [视频工程师](./content/motion-engineer(视频工程师).md) | 用 Remotion 把脚本组装成片（A/B 两轨） | ✅ 可用 |
 | [字幕编辑](./content/subtitle-editor(字幕编辑).md) | Whisper 转录、SRT/VTT 字幕生成与校对 | ✅ 可用 |
@@ -111,8 +110,8 @@
 在每个阶段工作流执行完毕并产出 Markdown README 时，末尾必须包含一个 ` ```json ` 结构块，该结构块会被以下 Schema 物理校验：
 - **选题阶段 (01)**：[`shared/schemas/01-topic.schema.json`](../schemas/01-topic.schema.json)（强制要求 `ai_limitations` 和 `judgment_layer`）
 - **策划阶段 (02)**：[`shared/schemas/02-plan.schema.json`](../schemas/02-plan.schema.json)（强制要求 `demo_design.pitfalls_to_expose`）
-- **B站视听编排阶段 (03)**：[`shared/schemas/03-plan-bilibili.schema.json`](../schemas/03-plan-bilibili.schema.json)（强制要求 `video_spec`, `scene_storyboards`, `zoom_crop_directives`）
-- **脚本阶段 (04)**：[`shared/schemas/04-script.schema.json`](../schemas/04-script.schema.json)（强制要求 `judgment_layer_coverage` 等）
+- **分镜口播稿阶段 (04)**：[`shared/schemas/04-script.schema.json`](../schemas/04-script.schema.json)（强制要求 `sections[]` / `judgment_layer_coverage`；自 03+04 合并后，画面蓝图字段 `video_spec` / `zoom_crop_directives` / 各 section 的 `scene_template`·`props` 一并落在此处）
+- **（已退役）B站视听编排阶段 (03)**：[`shared/schemas/03-plan-bilibili.schema.json`](../schemas/03-plan-bilibili.schema.json) 仅供 ep02 等合并前历史产物校验保留；ep03 起视听蓝图并入上方 04 契约，不再单独产出 03。
 
 ### 2. 终审质量门 (CHAI 评审员) — ⏸️ 已挂起（暂停使用）
 ~~每个阶段落盘为 `draft` 后，必须调用 [判断层评审](./meta/judgment-layer(判断层评审).md) 角色。~~（当前已挂起：落盘 `draft` 后无需调用判断层评审，Schema 校验通过并经人工确认即可置为 `approved`。）

@@ -73,7 +73,7 @@ ai-ide-workflows/ (项目根目录)
 
 ## 4. 单一事实源原则 (Single Source of Truth)
 
-- **角色定义**：所有角色（如 `copywriter`, `strategist`）仅在 `shared/roles/` 维护一份 Markdown 文件。
+- **角色定义**：所有角色（如 `script-director`, `strategist`）仅在 `shared/roles/` 维护一份 Markdown 文件。
 - **工作流定义**：13 阶段工作流仅在 `shared/workflows/<slug>.md` 维护一份（IDE 无关，纯 ASCII 文件名，中文名在 frontmatter `title`）。各 IDE 实际调用的副本由 `scripts/sync_workflows.py` **生成**，不手改：
   - **Devin**：`.devin/workflows/<slug>.md`
   - **Windsurf**：`.windsurf/workflows/<slug>.md`（原生 Workflows，`/<slug>` 调用）

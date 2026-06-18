@@ -2,7 +2,7 @@
 
 # 内容策划 Workflow (02-content-planning)
 
-本工作流用于连接**战略选题（01）**与**B站视听编排（03）**，由内容策划师完成技术选型、判断层多方案对比、技术路线锁定，并生成视频的“故事大纲与分镜导演策划”。
+本工作流用于连接**战略选题（01）**与**分镜口播稿（04，已合并原 03 视听编排）**，由内容策划师完成技术选型、判断层多方案对比、技术路线锁定，并生成视频的“故事大纲与分镜导演策划”。
 
 ---
 
@@ -110,19 +110,19 @@ New-Item -ItemType File -Path "content-library/$slug/01-topic/README.md", "conte
 4. **状态与看板变更**：
    - `02-plan/README.md` 头部 frontmatter 设置 `status: draft`。
    - 将 `content-library/PIPELINE.md` 看板中的 02 策划状态列置为 `draft`。
-   - **进入 03/04 前提**：`tutorial.final.md` 必须已被人工修订并置 `status: approved`（否则下游缺少“必讲要点”真相源）。
+   - **进入 04 前提**：`tutorial.final.md` 必须已被人工修订并置 `status: approved`（否则下游缺少“必讲要点”真相源）。
 
 ### 7. ~~触发判断层评审门 (Review Gate)~~ ⏸️ 已挂起（暂停使用）
 
 > ⚠️ **判断层评审门已挂起**：判断层评审（CHAI 质量门）已暂时从流程中移除，本阶段无需调用 `/meta/judgment-layer(判断层评审)`。
-> 完成 Schema 校验并自查无误后，可直接将 `content-library/PIPELINE.md` 看板中该期 02 策划列置为 `approved`，然后执行 `/03-video-planning-bilibili` 进入 B站视听编排阶段。
+> 完成 Schema 校验并自查无误后，可直接将 `content-library/PIPELINE.md` 看板中该期 02 策划列置为 `approved`，然后执行 `/04-script-draft` 进入分镜口播稿阶段（画面 + 口播一体，已合并原 03 视听策划）。
 > 恢复方法：删除本节的"已挂起"标记与本提示，并取消下方注释块的注释即可还原评审门。
 
 <!-- 判断层评审门（已挂起，恢复时取消本块注释）
 提示用户：
 > “技术调研驱动的内容策划已落盘归档至 `02-plan/README.md`，并生成了待验证假设清单。
 > 请通过调用 `/meta/judgment-layer(判断层评审)` 对本产物进行首轮 CHAI 规则质量评审。
-> 评审通过且看板标为 `approved` 后，可执行 `/03-video-planning-bilibili` 进入 B站视听编排阶段。”
+> 评审通过且看板标为 `approved` 后，可执行 `/04-script-draft` 进入分镜口播稿阶段。”
 -->
 
 
@@ -132,5 +132,5 @@ New-Item -ItemType File -Path "content-library/$slug/01-topic/README.md", "conte
 
 - 角色：`shared/roles/content/strategist(内容策划师).md`
 - 上游：`01-topic-research.md`
-- 下游：`03-video-planning-bilibili.md`
+- 下游：`04-script-draft.md`（已合并原 03 视听策划）
 - 校验：`shared/schemas/02-plan.schema.json`

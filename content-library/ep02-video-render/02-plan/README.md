@@ -1,13 +1,13 @@
 ---
 stage: 02-content-planning
-status: draft
+status: approved
 source_workflow: /02-content-planning
 ---
 
 # ep02 内容策划方案（视频大纲与分镜落盘版）
 ## 系列定位：【AI 视频自动化生产线】第 2 期：渲染引擎篇
 
-本文件由教学软文提炼生成，专用于指导下游的 **03 视听编排** 与 **04 脚本撰写**。分镜主线严格对齐 `tutorial.final.md`的「教人用 Vibe Coding」三段主线：**开场（钩子） → 找技术路径（AI 罗列现成路线） → 技术选型（不适用+坑对比/为什么 Remotion） → 技术落地（配置分发/配置即内容/主持人/避坑/出片） → 总结+EP03 预告**。流程即代码/角色编排已按分期移出本期（归 EP05/EP06）。
+本文件由教学软文提炼生成，专用于指导下游的 **04 分镜口播稿**（已合并原 03 视听编排 + 04 脚本撰写为一份「画面+口播」一体产物）。分镜主线严格对齐 `tutorial.final.md`的「教人用 Vibe Coding」三段主线：**开场（钩子） → 找技术路径（AI 罗列现成路线） → 技术选型（不适用+坑对比/为什么 Remotion） → 技术落地（配置分发/配置即内容/数字人选型） → 总结+EP03 预告**。流程即代码/角色编排已按分期移出本期（归 EP05/EP06）。
 
 > 📁 **本期 02-plan 文件分工与生成/修改约定（重要，先读）**
 > - **`tutorial.md` = 自动产物（AI 生成线）**：由 `/02-content-planning` 阶段4 生成，真相源="AI 生成了什么"。**请勿在此文件上做人工定稿**——它可能被重新生成覆盖。
@@ -53,11 +53,11 @@ source_workflow: /02-content-planning
 - **视觉焦点 (Visual Priority)**：`code`
 - **画面视觉**：`@ConceptScene`/图示讲"配置 → Explainer 按 type 分发 → 组件"的流向；`@TerminalScene` 展示一份 `comparison` 配置 JSON；`@SplitLayout` 左"让 AI 从零手写组件 ❌"右"只填数据复用现成组件 ✅"。
 
-### 第五段：技术落地②——数字主持人 + 避坑 + 一行出片（目标：90 秒）
-- **核心论点**：① 数字主持人 `VRMAvatar` 只做陪衬、不是主角：渲一次按场景取景、要站得稳（修法=在大腿上反向抵消髋部摆动让脚踩稳）、坚决不做对口型数字人；② 唯一反复踩的坑——别在组件顶层直接读 `window`，否则打包阶段崩，用 `.cursor/rules/remotion-ssr.mdc` 把守卫规则一次写死交给 AI；③ 出片就是一行 `npx remotion render`，交给 AI/终端跑。
-- **叙事节奏 (Beat Type)**：`demonstration`
-- **视觉焦点 (Visual Priority)**：`code`
-- **画面视觉**：主持人"脚踩稳"取景示意；`@SplitLayout` 左"顶层读 window 打包崩溃 ❌"右"typeof 守卫 + MDC 规则一次通过 ✅"（A 轨 `@TerminalScene` 兜底）；末尾 `@TerminalScene` 演示 `npx remotion render` 出片进度。
+### 第五段：技术落地②——数字人选型与落地（目标：60 秒）
+- **核心论点**：数字人也走和选渲染引擎同一套方法论——定位说死「陪衬、不是主角」；让 AI 把可选形象摆出来、说清坑（真人出镜：可信但要露脸、不可编程复用；写实/对口型：易掉恐怖谷、可信度反崩；二次元/3D 风格化角色 VRM：风格统一、可编程、渲一次到处用）；对着自己的约束（不露脸、可编程批量复用、避恐怖谷）选定 3D 角色 `VRMAvatar`、定死不做对口型；再让 AI 落地——渲一次按场景取景、修脚站稳（大腿上反向抵消髋部摆动）。
+- **叙事节奏 (Beat Type)**：`comparison`
+- **视觉焦点 (Visual Priority)**：`chart`
+- **画面视觉**：`@TableScene` 渲染「形象方案 / 适合 / 坑·代价」选型矩阵（真人·写实·二次元三行 stagger 入场、高亮选定的 VRM 行）；切到主持人"脚踩稳"取景示意（角落/半身/全身预设）作落地呈现。
 
 ### 第六段：结尾 CTA
 - **核心论点**：整期三步——找技术路径（AI 罗列）、技术选型（人对约束拍板）、技术落地（填配置、套组件、规则兜底、AI 跑渲染）；没有编程基础也能复制。关注我，下期 EP03 字幕匹配：用 Whisper 字级时间戳驱动 `CaptionOverlay`，让字幕踩着话音跳。
@@ -210,11 +210,11 @@ source_workflow: /02-content-planning
       "scene_template": "@SplitLayout"
     },
     {
-      "section_name": "技术落地②·数字主持人+避坑+一行出片",
-      "key_point": "VRMAvatar 只做陪衬要站得稳、坚决不做对口；顶层读 window 会崩→MDC 规则封死；出片一行 npx remotion render",
-      "beat_type": "demonstration",
-      "visual_priority": "code",
-      "scene_template": "@SplitLayout"
+      "section_name": "技术落地②·数字人选型与落地",
+      "key_point": "数字人走同款选型方法论：定位陪衬→AI 列真人/写实对口型/二次元(VRM)三种形象的适用与坑→对约束选定 VRM 3D 角色、定死不做对口型→AI 落地（取景预设、脚站稳）",
+      "beat_type": "comparison",
+      "visual_priority": "chart",
+      "scene_template": "@TableScene"
     },
     {
       "section_name": "结尾 CTA",

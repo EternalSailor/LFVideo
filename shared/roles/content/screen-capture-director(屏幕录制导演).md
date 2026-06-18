@@ -68,11 +68,10 @@
 你现在扮演屏幕录制导演。
 
 上下文：
-- 03 视听蓝图：{{03-plan-bilibili/README.md 内容}}
-- 04 脚本：{{04-script/README.md 内容}}
+- 04 分镜口播稿（含视听蓝图 + 口播，已合并原 03）：{{04-script/README.md 内容}}
 
 任务：
-1. 从 03 蓝图中提取所有 @VideoSlot 场景及其 zoom_crop_directives
+1. 从 04 末尾的 JSON 契约中提取所有 @VideoSlot 场景及其 zoom_crop_directives
 2. 生成录屏任务清单（场景、裁剪指令、操作内容、预估时长）
 3. 标注每条录屏的优先级（有 A 轨兜底的可降级）
 

@@ -1,20 +1,23 @@
 <!-- AUTO-GENERATED from shared/workflows/04-script-draft.md. Do not edit here; edit the source and run `python scripts/sync_workflows.py`. -->
 
-# 脚本撰写 Workflow (04-script-draft)
+# 分镜口播稿 Workflow (04-script-draft)
 
-基于上游产出的**故事大纲（02）**与**视听编排蓝图（03）**，调用 `文案撰稿人` 角色撰写完美对齐真实代码的完整视频脚本（口播稿 + 画面指示），并按需派生知乎版、小红书版。
+基于上游 **02-plan 故事大纲 + tutorial.final.md（内容真相源）**，调用 `分镜口播导演` 角色，**一次性**产出「画面 + 口播」一体的分镜口播稿——同一份文档里既给 Remotion 组件映射 / Props / 动画 Cue / 录屏 zoom 指令，又给逐段口播台词，逐段对齐、互为约束。
+
+> 📌 **本阶段合并了原「03 视听策划」与「04 脚本撰写」两道工序**。从此不再有独立的 `03-plan-bilibili` 产物与单独评审：画面与口播由同一角色同步产出，下游 05 录屏 / 06 TTS / 07 组装直接读本阶段末尾的 JSON 契约。
 
 ---
 
 ## 前置依赖
 
-本工作流假设已完成 `/03-video-planning-bilibili`，已具备：
-- 处于 `approved` 状态的 `content-library/<epNN-slug>/03-plan-bilibili/README.md`（含 Remotion 组件映射与 Props 规格）
-- 处于 `approved` 状态的 `content-library/<epNN-slug>/02-plan/README.md`（故事大纲与分镜，用于对齐画面与段落结构）
-- **【必读·内容真相源】处于 `approved` 状态的 `content-library/<epNN-slug>/02-plan/tutorial.final.md`（人工修订定稿）**：口播台词的内容与深度以此为准；文件末尾的「必讲要点覆盖清单」是本阶段口播必须逐条覆盖的硬性清单。若该文件缺失或仍为 `draft`（人工未定稿），先提示用户回到 02 完成人工定稿，**不要仅凭 README 大纲就开写**（会漏掉 tutorial 里的细节料）。
-- **必须读取并理解组件说明书**：`shared/docs/remotion-spec.md`（约束脚本画面的编写，防止写出无法生成的空想效果）
+本工作流假设已完成 `/02-content-planning`，已具备：
+- 处于 `approved` 状态的 `content-library/<epNN-slug>/02-plan/README.md`（故事大纲 `outline_sections` 与分镜结构，用于对齐段落与画面意图）
+- **【必读·内容真相源】处于 `approved` 状态的 `content-library/<epNN-slug>/02-plan/tutorial.final.md`（人工修订定稿）**：口播台词的内容与深度、以及画面 Props 承载的数据均以此为准；文件末尾的「必讲要点覆盖清单」是本阶段必须逐条覆盖的硬性清单。若该文件缺失或仍为 `draft`（人工未定稿），先提示用户回到 02 完成人工定稿，**不要仅凭 README 大纲就开写**（会漏掉 tutorial 里的细节料）。
+- **必须读取并遵循组件说明书**：`shared/docs/remotion-spec.md`（约束画面编写，防止写出无法生成的空想效果）
 
 如果缺少上述输入，先提示用户回到上游工作流。
+
+> ❗ **关键前提**：`tutorial.final.md` 必须已被人工修订并置 `status: approved`，否则缺少「必讲要点」真相源，禁止继续。
 
 ---
 
@@ -22,38 +25,35 @@
 
 ### 1. 加载角色定义与组件规范
 
-- 读取 `shared/roles/content/copywriter(文案撰稿人).md`，理解"文案撰稿人"的：
-  - 身份定位、输出格式、文风守则（短句、口语化、具体数字、无 AI 味）与边界。
+- 读取 `shared/roles/content/script-director(分镜口播导演).md`，理解其两套子标准：
+  - **视觉/Props 子标准**：严谨工程术语、组件覆盖、防静止、干货式钩子（结论先行 + 实质画面，不靠演示噱头）、受众对齐、A/B 轨兜底。
+  - **口播风格守则·干货紧凑版**：结论先行、干货紧凑、短句口语、情绪克制、对照前提与人设一致、无 AI 味。
 - **读取并遵循** `shared/docs/remotion-spec.md`：
-  - 脚本中的 `[画面]` 描述必须**严格优先映射到 Remotion 的内置组件代号上**（如：`@IntroScene`, `@ConceptScene`, `@SplitLayout`）。
-  - 如果要表达复杂概念，应设计成 `@ConceptScene` 中的 2D 卡片 + 恰当的 Emoji 图标。
-  - 涉及 Remotion 绝对无法自动生成的画面（例如真实 IDE 的报错弹窗、复杂编写过程），必须用 `@VideoSlot` 并清晰打上 `[B 轨占位替换提醒：请用户在此补充 xxx 录屏/截图]` 标记。
-  - **A/B 轨兜底**：对于 03 蓝图中含 `fallback_a_track` 的场景，脚本中必须同时给出 `[B 轨]` 画面指示（`@VideoSlot` 录屏）和 `[A 轨兜底]` 画面指示（对应的 Remotion 组件渲染，如 `@TerminalScene` + 代码 Props），确保 B 轨录屏缺失时有可渲染的 A 轨替代画面。
+  - `[画面]` 描述必须**严格优先映射到 Remotion 内置组件代号**（如 `@IntroScene`, `@ConceptScene`, `@TableScene`, `@TimelineScene`, `@SplitLayout`）。
+  - 复杂概念应设计成 `@ConceptScene` 的 2D 卡片 + 恰当 Emoji 图标。
+  - Remotion 绝对无法自动生成的画面（真实 IDE 报错弹窗、复杂编写过程）必须用 `@VideoSlot` 并打上 `[B 轨占位替换提醒：请用户在此补充 xxx 录屏/截图]`。
+  - **A/B 轨兜底**：含 B 轨录屏的场景，脚本中必须同时给出 `[B 轨]`（`@VideoSlot` + `zoom_crop_directives`）和 `[A 轨兜底]`（对应 Remotion 组件渲染，如 `@TerminalScene` + 代码 Props），确保 B 轨缺失时有可渲染的 A 轨替代画面。
 
-### 2. 确认定稿标题与验证输入
+### 2. 加载上游资产与内容真相源
 
 从 `02-plan/README.md` 获取：
-- 定稿标题
-- 视觉隐喻与画面 A/B 轨划分
-- 演示路径
+- 定稿标题、`outline_sections`（段落与抽象视觉描述）、视觉隐喻与画面 A/B 轨划分、演示路径 `demo_design`。
+- Demo 实操设计：AI 的报错原因与避坑卡点（口播里的「痛点/卡点」）、解决卡点所需的 Rules 规则。
 
-从 `02-plan/README.md` 的 Demo 实操设计段落获取：
-- AI 的报错原因与避坑卡点（台词里的“痛点/卡点”）
-- 解决卡点所需配置的 Rules 规则。
+从 `02-plan/tutorial.final.md`（人工定稿）获取**内容真相源**：
+- 通读全文，按其章节深度撰写口播；Props 数据（对比矩阵/选型理由/实操示例）须对齐其实际内容。
+- **逐条对照文件末尾的「必讲要点覆盖清单」**，确保每一条都在脚本里有对应表达（公式/伪代码/对照表/选型理由等不得遗漏）。
 
-从 `02-plan/tutorial.final.md`（人工定稿）获取**口播内容真相源**：
-- 通读全文，按其章节深度撰写口播；
-- **逐条对照文件末尾的「必讲要点覆盖清单」**，确保每一条必讲要点都在脚本口播里有对应表达（公式/伪代码/对照表/选型理由等不得遗漏）。
+### 3. 逐段一体编排 + 撰稿（写入 `04-script/README.md`）
 
-### 3. 撰写 B 站视频脚本
+按 `02-plan/README.md` 声明的视觉模版和大纲，对每个 section **同时**产出画面与口播：
 
-基于 `02-plan/README.md` 中声明的视觉模版和大纲，调用 `copywriter(文案撰稿人).md` 撰写脚本：
-
-#### 3.1 撰写 B站 深度视频脚本（写入 `04-script/README.md`）
 * **体量要求**：长 5-10 分钟，口播 1500 - 2500 字。
-* **内容深度**：按 `tutorial.final.md` 的两步主线展开——先用大白话讲“用 Vibe Coding 怎么选这条技术路线”，再讲“用 Vibe Coding 怎么把本期能力搭出来”；把新声明的模板组件（如 `@TableScene`、`@TimelineScene`）参数填充完整。
+* **内容深度**：按 `tutorial.final.md` 的两步主线展开——先用大白话讲「用 Vibe Coding 怎么选这条技术路线」，再讲「用 Vibe Coding 怎么把本期能力搭出来」；把声明的模板组件（如 `@TableScene`、`@TimelineScene`）Props 参数填充完整。
+* **组件映射决策**：现有组件可表达 → 复用并标注组件名与 Props；无法表达 → 声明 `Template Ticket`（含物理路径建议、Props 接口、动画规范）。
+* **录屏 zoom 指令**：对含 B 轨的场景生成 `zoom_crop_directives`（clip_id / 时间戳 / 缩放倍数 / 焦点坐标）。
 
-#### 3.2 脚本内格式模板
+#### 3.1 脚本内格式模板
 
 脚本必须分 `[画面]` 和 `[口播]` 两轨；当一段口播估算时长 > 15 秒（中文约每秒 4–5 字，即 > ~75 字）时，`[画面]` 必须额外给出 **[子镜头时间线]**，逐拍写出画面在第几秒发生什么变化，避免长口播配单一静止画面（详见 `shared/docs/remotion-spec.md` §1.5 防静止规范）：
 
@@ -69,14 +69,14 @@ source_workflow: /04-script-draft
 
 ---
 
-## 第一段：【模版代号】开头黄金钩子（目标时长）
-- **[画面]** 调用 `@IntroScene`。参数 title="...", subtitle="..."
-  - **[子镜头时间线]**（黄金 5 秒留存，极速视觉切换）：0s [双画面] 左改一行配置、右终端一秒渲染出片 → 4s [声明式映射] 展示配置字段与画面的动态对应 → 15s 主标题弹性入场 → 20s 三步路线图依次锁定
-- **[口播]** （结果先行、不客套）想过把视频开发成一条全自动生产线吗？改一行配置，程序自动重新编译渲染，新视频一秒出片——这期就带你用大白话指挥 AI，把这套渲染引擎搭出来。
+## 第一段：【@IntroScene】开场（干货式钩子 + 点题，目标时长）
+- **[画面]** 调用 `@IntroScene`。Props title="...", subtitle="..."
+  - **[子镜头时间线]**（干货式钩子，实质画面）：0s 首屏呈现本期核心成果/「配置→出片」的真实画面 → 4s 一句话点题落到主标题 → 12s 关键认知卡浮出 → 20s 三步路线图依次锁定
+- **[口播]** （结论先行、不客套）这期把视频写成代码、让 AI 按配置自动出片；先记住一个关键认知：AI 最强的是啃文本和代码，所以渲染就该用数据驱动。
 
-## 第二段：【模版代号】用 Vibe Coding 选路线·对比矩阵（目标时长）
-- **[画面]** 调用 `@TableScene` 模版（严谨工程术语）。参数 columns=["技术路线", "适用场景", "局限条件", "关键约束"], rows=[["Remotion", "前端栈、复杂网页排版、跨期模板复用", "纯后台超长视频批处理", "打包时读浏览器对象会崩；BUSL 商业授权"], ["Manim", "数学/公式/算法可视化", "常规 UI、网页排版", "排版弱、渲染慢"]], highlightColumn="3"
-  - **[子镜头时间线]**（本段口播 >15s，必填）：0s 表头淡入 → 3s 第 1 行 stagger 入场 → 7s 第 2 行入场并高亮 → 12s Zoom 聚焦“关键约束”列 → 18s 缩表 + 浮出“为什么选它”结论卡
+## 第二段：【@TableScene】用 Vibe Coding 选路线·对比矩阵（目标时长）
+- **[画面]** 调用 `@TableScene` 模版（严谨工程术语）。Props columns=["技术路线","适用场景","局限条件","关键约束"], rows=[["Remotion","前端栈、复杂网页排版、跨期模板复用","纯后台超长视频批处理","打包时读浏览器对象会崩；BUSL 商业授权"],["Manim","数学/公式/算法可视化","常规 UI、网页排版","排版弱、渲染慢"]], highlightColumn="3"
+  - **[子镜头时间线]**（本段口播 >15s，必填）：0s 表头淡入 → 3s 第 1 行 stagger 入场 → 7s 第 2 行入场并高亮 → 12s Zoom 聚焦「关键约束」列 → 18s 缩表 + 浮出「为什么选它」结论卡
 - **[口播]** 我没挨个去试，是让 AI 把这几条技术路线摆出来、再让它说清各自的适用场景与关键约束，最后对着我自己的工程约束做减法——这一步的判断，还得人来。
 ```
 
@@ -84,19 +84,25 @@ source_workflow: /04-script-draft
 
 ### 4. 自我检查（不输出，仅约束）
 
-- ❌ **对话式技术播客风（口播质量第一标准）**：是否全面转“和朋友聊天”模式？逐段核对——(a) 删干净“首先/其次/旨在”等书面连接词、拆掉长难句；(b) 每个复杂概念都配了生活类比；(c) 有第一人称的情绪/踩坑经历而非冷客观陈述；(d) 每个关键点收了一句 ≤15 字的金句。任一条不达标即判不合格（详见 `copywriter` 角色《口播风格守则》）。
-- ❌ **黄金 3-5 秒钩子**：开场前 5 秒的口播与 `[子镜头时间线]` 是否以“结果先行 / 极速切换”瞬间切入（第 1-2 句直接抛出成果演示）？是否避免了缓慢客套话与静态标题占满前 15 秒？
-- ❌ **受众对齐与术语专业化**：是否出现面向传统剪辑师的痛点对比（传统剪辑/拖时间轴/手动对字幕）？选型表述是否使用严谨工程术语（适用场景/局限条件/关键约束）而非“不适用+坑/报菜名/复制粘贴土办法”？
-- ❌ **主线＝教人用 Vibe Coding（与软文同调）**：开场是否结果先行？技术段是否体现“人讲需求/看坑/定规则 + AI 写和填”的分工？结尾是否落到“没基础也能复制”？
-- ❌ **去抽象腔**：是否出现“范式 / 换一套心智模型 / 帧即状态”等抽象标签当讲法？有则改成大白话。
+**口播侧（voice 字段）：**
+- ❌ **对话式技术播客风·干货紧凑版（口播质量第一标准）**：是否「先干货、再口语」？逐段核对——(a) 结论先行、删干净书面连接词与铺垫水词、短句优先；(b) 信息密度够不够，有无一句话带过/注水；(c) 只在最难懂处用了恰当生活类比（不滥用）；(d) 情绪克制——全片少量、主要在开场、无夸张煽情；(e) 真正的关键点收了一句 ≤15 字金句（不必每段都塞）。任一条不达标即判不合格（详见 `script-director` 角色《口播风格守则》）。
+- ❌ **干货式钩子**：开场前 3-5 秒的口播是否用**一句结论先行的干货**点透本期（本期能拿到什么 / 反直觉的关键认知 / 核心结论）、情绪克制不煽情；**是否避免演示噱头、综艺式悬念与夸张表演**；钩子是否只在开场（正文不反复抛钩子、不自问自答铺垫）？
+- ❌ **对照前提与人设一致**：方案对照是否被写成「手写/手动 vs 自动/AI」，或拿「省人力、少敲键盘」当卖点？Vibe Coding 人设下两条路都是 AI 写代码，对照轴必须落在工程化复用 / 强类型约束 / 可维护性 / 稳定性等真实差异上，不得用劳动量轴（如「手写拼接、每期复制粘贴」）暗示对手要靠人肉硬干。
+- ❌ **主线＝教人用 Vibe Coding（与软文同调）**：开场是否结果先行？技术段是否体现「人讲需求/看坑/定规则 + AI 写和填」的分工？结尾是否落到「没基础也能复制」？
+- ❌ **去抽象腔**：是否出现「范式 / 换一套心智模型 / 帧即状态」等抽象标签当讲法？有则改成大白话。
+- ❌ 是否删除了所有「在数字化浪潮中、赋能、打造、全方位」等恶俗 AI 味句式？口播是否短句优先、极具换气感？
+
+**视觉侧（[画面] / Props / 录屏指令）：**
+- ❌ **组件覆盖度**：每个 section 是否都映射到具体组件或 Template Ticket？（禁止留下未解决的抽象描述）
+- ❌ **受众对齐与术语专业化**：是否出现面向传统剪辑师的痛点对比（传统剪辑/拖时间轴/手动对字幕）？选型表述是否使用严谨工程术语（适用场景/局限条件/关键约束）而非「不适用+坑/报菜名/复制粘贴土办法」？（口语化只允许出现在 `[口播]`，视觉/Props 字段用工程术语）
+- ❌ **防静止**：是否存在任一段口播 > 15 秒（约 75 字）却只配单一静止画面？若有，必须为该段补 **[子镜头时间线]** / `visual_beats` 或拆分分镜（见 `shared/docs/remotion-spec.md` §1.5）。
+- ❌ **A/B 轨兜底完整性**：含 B 轨录屏的场景，脚本是否同时给出了 `[B 轨]`（含 `zoom_crop_directives`）和 `[A 轨兜底]` 画面指示？缺一即判不合格。
+- ❌ 脚本中是否将声明的新模版组件（如 `@TableScene` 等）Props 参数和数据 Schema 100% 填充完整？
+
+**通用：**
+- ❌ **必讲要点覆盖**：`tutorial.final.md` 末尾「必讲要点覆盖清单」里的每一条，是否都能在本脚本（口播或画面承载）里找到对应？逐条核对，任一条无对应即判不合格，需补写。
 - ❌ **单期范围纪律**：是否把跨期话题（流程即代码/角色 → EP05/06、字幕 → EP03、音频 → EP04）展开成段？应只一句带过。
 - ❌ 脚本是否完整产出了 B 站深度版？
-- ❌ **必讲要点覆盖**：`tutorial.final.md` 末尾「必讲要点覆盖清单」里的每一条，是否都能在本脚本口播里找到对应句？逐条核对，任一条无对应即判不合格，需补写。
-- ❌ 脚本中是否将策划案声明的新模版组件（如 `@TableScene` 等）参数和数据 Schema 100% 填充完整？
-- ❌ 是否删除了所有“在数字化浪潮中、赋能、打造、全方位”等恶俗 AI 味句式？
-- ❌ 口播是否短句优先，极具换气感？
-- ❌ **A/B 轨兜底完整性**：03 蓝图中含 `fallback_a_track` 的场景，脚本是否同时给出了 `[B 轨]` 和 `[A 轨兜底]` 画面指示？缺一即判不合格。
-- ❌ **防静止**：是否存在任一段口播 > 15 秒（约 75 字）却只配单一静止画面？若有，必须为该段补 **[子镜头时间线]** 或拆分分镜（见 `shared/docs/remotion-spec.md` §1.5）。
 
 ### 5. 多平台其他改写（按需）
 
@@ -106,18 +112,21 @@ source_workflow: /04-script-draft
 
 ### 6. 落盘归档与校验
 
-- 创建目录：`content-library/<epNN-slug>/04-script/`
-- 将脚本写入：`04-script/README.md`。
-- **MANDATORY**: 脚本末尾必须追加符合 `shared/schemas/04-script.schema.json` 规范的 ` ```json ` 结构化块。
-- **该 JSON 块是下游全部阶段（TTS/组装/字幕/分发）的唯一真源（SSOT），一旦 approve 即冻结**：其中 `title`、`sections[].id`/`voice`/`duration_hint_seconds`、以及 `anti_hype_forbidden`（噱头黑名单）是下游**不得改写**的硬契约；下游只能逐条映射，不能增删段落、重写标题/口播或重新引入噱头。示例：
+- 创建目录：`content-library/<epNN-slug>/04-script/`，将脚本写入 `04-script/README.md`。
+- **MANDATORY**：脚本末尾必须追加符合 `shared/schemas/04-script.schema.json` 规范的 ` ```json ` 结构化块。
+- **该 JSON 块是下游全部阶段（B轨录屏/TTS/组装/字幕/分发）的唯一真源（SSOT），一旦 approve 即冻结**：其中 `title`、`sections[].id`/`voice`/`duration_hint_seconds`、以及 `anti_hype_forbidden`（噱头黑名单）是下游**不得改写**的硬契约；`video_spec`、`sections[].scene_template`/`props`/`visual_beats`、`zoom_crop_directives` 由本阶段一并产出，供 05/07 直接读取。下游只能逐条映射，不能增删段落、重写标题/口播或重新引入噱头。示例：
   ```json
   {
     "title": "定稿视频标题",
+    "platform": "bilibili",
     "anti_hype_forbidden": ["100 行", "百倍"],
+    "video_spec": { "aspect_ratio": "16:9", "resolution": "1920x1080", "fps": 30 },
     "sections": [
       {
         "id": "1",
         "track": "A",
+        "scene_template": "@IntroScene",
+        "props": { "title": "定稿标题", "subtitle": "副文案" },
         "voice": "口播第一段...",
         "visual_instructions": "指示调用 @IntroScene",
         "duration_hint_seconds": 15
@@ -125,16 +134,25 @@ source_workflow: /04-script-draft
       {
         "id": "2",
         "track": "A",
+        "scene_template": "@TableScene",
+        "props": { "columns": ["技术路线","适用场景","局限条件","关键约束"], "rows": [] },
         "voice": "口播第二段（较长，>15s）...",
         "visual_instructions": "调用 @TableScene 并按节拍推进",
         "duration_hint_seconds": 20,
         "visual_beats": [
           { "at_seconds": 0, "action": "表头淡入" },
-          { "at_seconds": 3, "action": "第 1 行 stagger 入场" },
           { "at_seconds": 7, "action": "第 2 行入场并 highlight_cell(2,3)" },
-          { "at_seconds": 12, "action": "Zoom 聚焦差异格" },
           { "at_seconds": 18, "action": "缩表并浮出结论卡" }
         ]
+      }
+    ],
+    "zoom_crop_directives": [
+      {
+        "clip_id": "demo-config-render",
+        "timestamp_start": "0:00",
+        "timestamp_end": "0:30",
+        "zoom_level": 1.5,
+        "focal_point": { "x": 0.5, "y": 0.3 }
       }
     ],
     "judgment_layer_coverage": {
@@ -155,14 +173,14 @@ source_workflow: /04-script-draft
 ### 7. ~~触发判断层评审门 (Review Gate)~~ ⏸️ 已挂起（暂停使用）
 
 > ⚠️ **判断层评审门已挂起**：判断层评审（CHAI 质量门）已暂时从流程中移除，本阶段无需调用 `/meta/judgment-layer(判断层评审)`。
-> 完成 Schema 校验并自查无误后，可直接将 `content-library/PIPELINE.md` 看板中该期 04 脚本列置为 `approved`，然后执行 `/05-video-assembly` 进入视频渲染拼装阶段。
+> 完成 Schema 校验并自查无误后，可直接将 `content-library/PIPELINE.md` 看板中该期 04 脚本列置为 `approved`，然后执行 `/05-b-roll-recording`（录屏）与 `/06-tts-synthesis`（配音），再进入 `/07-video-assembly` 阶段。
 > 恢复方法：删除本节的"已挂起"标记与本提示，并取消下方注释块的注释即可还原评审门。
 
 <!-- 判断层评审门（已挂起，恢复时取消本块注释）
 提示用户：
 > “脚本已落盘归档至 `04-script/README.md` 并生成了结构化校验块。
 > 请通过调用 `/meta/judgment-layer(判断层评审)` 对本产物进行首轮 CHAI 规则质量评审。
-> 评审通过且看板标为 `approved` 后，可执行 `/05-video-assembly` 进入视频渲染拼装阶段。”
+> 评审通过且看板标为 `approved` 后，可执行 `/05-b-roll-recording` 与 `/06-tts-synthesis`。”
 -->
 
 
@@ -170,6 +188,7 @@ source_workflow: /04-script-draft
 
 ## 关联文件
 
-- 角色：`shared/roles/content/copywriter(文案撰稿人).md`
-- 上游：`03-video-planning-bilibili.md`
+- 角色：`shared/roles/content/script-director(分镜口播导演).md`
+- 上游：`02-content-planning.md`
+- 内容真相源：`content-library/<epNN-slug>/02-plan/tutorial.final.md`
 - 下游：`05-b-roll-recording.md`、`06-tts-synthesis.md`
