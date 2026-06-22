@@ -17,8 +17,8 @@ Scene-template -> Explainer ``cut.type`` mapping (the engine has no
     @OutroScene    -> outro_scene     @SplitLayout   -> comparison
 
 Cut timing is driven by each shot's ``duration_seconds`` (06-tts narration is
-not yet produced for this cut; once it is, swap in real segment durations the
-same way ``build_ep02_props.py`` reads ``06-tts/assets/manifest.json``).
+not yet produced for this cut; once it is, swap in real segment durations from
+``06-tts/assets/manifest.json``).
 
 Usage:
     python build_ep02_shots_props.py        # writes public/demo-props/ep02-shots.json
@@ -38,6 +38,14 @@ OUTPUT_JSON = COMPOSER_DIR / "public" / "demo-props" / "ep02-shots.json"
 
 FPS = 30
 THEME = "flat-motion-graphics"
+
+# Digital host as a full-frame background layer (Mixamo clip drives the body);
+# the Remotion UI floats on top with transparent scene backgrounds.
+AVATAR = {
+    "enabled": True,
+    "layer": "background",
+    "clip": "avatars/Sitting.fbx",
+}
 
 TEMPLATE_TO_TYPE = {
     "@IntroScene": "intro_scene",
@@ -218,6 +226,7 @@ def main() -> int:
         "cuts": cuts,
         "overlays": [],
         "captions": [],
+        "avatar": AVATAR,
     }
     OUTPUT_JSON.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_JSON.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
