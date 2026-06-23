@@ -38,10 +38,10 @@ Auto-generated from `src/custom-templates/scene-types.json` by `scripts/gen_scen
 |---|---|---|---|---|
 | `intro_scene` | `@IntroScene` | `title` | `subtitle` | 全屏开场标题（渐变描边主标题 + 可选副标题）。 |
 | `outro_scene` | `@OutroScene` | `headline` | `cta` | 全屏收尾（大标题 + 脉冲 CTA 按钮）。 |
-| `concept_scene` | `@ConceptScene` | `title`, `items` | `eyebrow` | 纵向概念卡列表（图标 + 标签 + 标题 + 描述）。 |
-| `timeline_scene` | `@TimelineScene` | `title`, `events` | `eyebrow` | 横向时间线卡片（年份 + 图标 + 标题 + 描述），带进度连线。 |
-| `table_scene` | `@TableScene` | `title`, `headers`, `rows` | `eyebrow`, `highlightCell` | 通用表格：列由 headers 决定，每行是与之对齐的 cells[]。highlightCell 用 "行-列" 标注高亮。 |
-| `comparison_scene` | `@SplitLayout` | `leftLabel`, `leftValue`, `rightLabel`, `rightValue` | `title` | 左右对比双卡（基于 SplitLayout），value 走正文字号、自适应长句。 |
+| `concept_scene` | `@ConceptScene` | `title`, `items` | `eyebrow`, `enter` | 纵向概念卡列表（图标 + 标签 + 标题 + 描述）。enter 为可选的元素入场过渡。 |
+| `timeline_scene` | `@TimelineScene` | `title`, `events` | `eyebrow`, `enter` | 横向时间线卡片（年份 + 图标 + 标题 + 描述），带进度连线。enter 为可选的元素入场过渡。 |
+| `table_scene` | `@TableScene` | `title`, `headers`, `rows` | `eyebrow`, `highlightCell`, `enter` | 通用表格：列由 headers 决定，每行是与之对齐的 cells[]。highlightCell 用 "行-列" 标注高亮。enter 为可选的行入场过渡。 |
+| `comparison_scene` | `@SplitLayout` | `leftLabel`, `leftValue`, `rightLabel`, `rightValue` | `title`, `enter` | 左右对比双卡（基于 SplitLayout），value 走正文字号、自适应长句。enter 为可选的卡片入场过渡。 |
 | `code_scene` | `@TerminalScene` | `steps` | `terminalTitle`, `prompt` | 合成终端 / 代码场景：主题驱动配色、等宽字体，step 协议 cmd/out/pause/pill。 |
 
 <!-- END AUTO-GENERATED: template-scenes -->

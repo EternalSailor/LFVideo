@@ -31,6 +31,17 @@ export const IntroScene: React.FC<IntroProps> = ({title, subtitle}) => {
 		{extrapolateLeft: 'clamp'}
 	);
 
+	// frame 驱动的标题流光（取代 CSS `text-shine ... infinite`，8s 一循环）。
+	const shineX = ((frame / fps / 8) % 1) * 200;
+	// frame 驱动的副标题揭示（取代 CSS `subtitle-reveal`，延迟 0.4s、时长 1.2s）。
+	const subT = interpolate(frame, [fps * 0.4, fps * 1.6], [0, 1], {
+		extrapolateLeft: 'clamp',
+		extrapolateRight: 'clamp',
+	});
+	const subEase = 1 - Math.pow(1 - subT, 3);
+	const subOpacity = subEase * 0.85;
+	const subTranslateY = (1 - subEase) * 20;
+
 	return (
 		<AbsoluteFill
 			style={{
@@ -42,17 +53,6 @@ export const IntroScene: React.FC<IntroProps> = ({title, subtitle}) => {
 				transform: `scale(${scale})`,
 			}}
 		>
-			<style>{`
-				@keyframes text-shine {
-					0% { background-position: 0% 50%; }
-					100% { background-position: 200% 50%; }
-				}
-				@keyframes subtitle-reveal {
-					0% { opacity: 0; transform: translateY(20px); }
-					100% { opacity: 0.85; transform: translateY(0); }
-				}
-			`}</style>
-
 			<div
 				style={{
 					position: 'absolute',
@@ -77,9 +77,9 @@ export const IntroScene: React.FC<IntroProps> = ({title, subtitle}) => {
 					letterSpacing: -1.5,
 					background: `linear-gradient(90deg, ${colors.text.primary} 0%, ${colors.accent[0]} 25%, ${colors.accent[1]} 50%, ${colors.accent[3] ?? colors.accent[0]} 75%, ${colors.text.primary} 100%)`,
 					backgroundSize: '200% auto',
+					backgroundPosition: `${shineX}% 50%`,
 					WebkitBackgroundClip: 'text',
 					WebkitTextFillColor: 'transparent',
-					animation: 'text-shine 8s linear infinite',
 					zIndex: 1,
 				}}
 			>
@@ -93,9 +93,8 @@ export const IntroScene: React.FC<IntroProps> = ({title, subtitle}) => {
 						fontWeight: 600,
 						letterSpacing: 2,
 						textTransform: 'uppercase',
-						animation: 'subtitle-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-						animationDelay: '0.4s',
-						opacity: 0,
+						opacity: subOpacity,
+						transform: `translateY(${subTranslateY}px)`,
 						zIndex: 1,
 					}}
 				>

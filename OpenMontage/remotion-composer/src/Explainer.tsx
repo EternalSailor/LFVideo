@@ -36,7 +36,7 @@ import { KPIGrid } from "./components/charts/KPIGrid";
 import { ProgressBar } from "./components/ProgressBar";
 import { CaptionOverlay, WordCaption } from "./components/CaptionOverlay";
 import { VRMAvatar, AvatarTimelineEntry } from "./components/VRMAvatar";
-import { quadMatrix3d, UnityBackgroundConfig } from "./components/screenWarp";
+import { quadMatrix3d, animatedQuadMatrix3d, UnityBackgroundConfig } from "./components/screenWarp";
 import {
   AvatarOverride,
   AvatarSceneConfig,
@@ -65,7 +65,7 @@ import {
   buildTemplateTheme,
   PALETTES,
 } from "./custom-templates";
-import type { BackgroundVariant, CodeStep } from "./custom-templates";
+import type { BackgroundVariant, CodeStep, TransitionId } from "./custom-templates";
 
 // Load Space Grotesk font for cinematic typography
 const { fontFamily } = loadFont("normal", {
@@ -186,6 +186,8 @@ interface Cut {
   rows?: any[];
   items?: any[];
   highlightCell?: string;
+  /** Optional element-entrance transition for scenes that support it. */
+  enter?: TransitionId;
   /** Per-cut digital-host treatment: a preset name or inline override. */
   avatar?: string | AvatarOverride;
 }
@@ -546,6 +548,7 @@ const SCENES: SceneEntry[] = [
         title={cut.title}
         leftLabel={cut.leftLabel!} leftValue={cut.leftValue!}
         rightLabel={cut.rightLabel!} rightValue={cut.rightValue!}
+        enter={cut.enter}
       />
     ),
   })),
@@ -673,21 +676,21 @@ const SCENES: SceneEntry[] = [
     type: "concept_scene",
     guard: (c) => !!c.title && !!c.items,
     render: (ctx) => (
-      <ConceptScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} items={ctx.cut.items!} />
+      <ConceptScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} items={ctx.cut.items!} enter={ctx.cut.enter} />
     ),
   },
   {
     type: "timeline_scene",
     guard: (c) => !!c.title && !!c.events,
     render: (ctx) => (
-      <TimelineScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} events={ctx.cut.events!} />
+      <TimelineScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} events={ctx.cut.events!} enter={ctx.cut.enter} />
     ),
   },
   {
     type: "table_scene",
     guard: (c) => !!c.title && !!c.headers && !!c.rows,
     render: (ctx) => (
-      <TableScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} headers={ctx.cut.headers!} rows={ctx.cut.rows!} highlightCell={ctx.cut.highlightCell} />
+      <TableScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} headers={ctx.cut.headers!} rows={ctx.cut.rows!} highlightCell={ctx.cut.highlightCell} enter={ctx.cut.enter} />
     ),
   },
   {
@@ -833,6 +836,7 @@ const OverlayRenderer: React.FC<{ overlay: Overlay }> = ({ overlay }) => {
 export const Explainer: React.FC<ExplainerProps> = (props) => {
   const { cuts, overlays, captions, audio, avatar, unityBackground } = props;
   const { fps, durationInFrames, width, height } = useVideoConfig();
+  const frame = useCurrentFrame();
 
   // Resolve theme from props — playbook name, theme name, or custom themeConfig
   const theme = resolveTheme(props as Record<string, unknown>);
@@ -858,6 +862,20 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
   // Backdrop translucency + tint for the warped UI (holographic look).
   const screenOpacity = screen?.screenOpacity ?? 0.4;
   const screenTint = screen?.screenTint ?? "#0b2a52";
+
+  // Warp-reveal: when warpRevealFrames > 0, the whole UI plane flies from a
+  // flat full-frame rectangle into the screen quad over the opening frames, so
+  // the perspective transform is visible. Otherwise the warp is static.
+  const warpRevealFrames = screen?.warpRevealFrames ?? 0;
+  const warpProgress =
+    warp && warpRevealFrames > 0
+      ? 1 - Math.pow(1 - Math.max(0, Math.min(1, frame / warpRevealFrames)), 3)
+      : 1;
+  const warpTransform = warp
+    ? warpProgress >= 1
+      ? quadMatrix3d(width, height, screen!.screenQuad!)
+      : animatedQuadMatrix3d(width, height, screen!.screenQuad!, warpProgress)
+    : "";
 
   // The screen's own backdrop (warped together with the UI). The background is
   // now a single independent, theme-driven layer; all template scenes render
@@ -1028,7 +1046,7 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
             width,
             height,
             transformOrigin: "0 0",
-            transform: quadMatrix3d(width, height, screen!.screenQuad!),
+            transform: warpTransform,
             backfaceVisibility: "hidden",
           }}
         >

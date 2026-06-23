@@ -18,30 +18,30 @@
     {
       "type": "concept_scene",
       "template": "@ConceptScene",
-      "description": "纵向概念卡列表（图标 + 标签 + 标题 + 描述）。",
+      "description": "纵向概念卡列表（图标 + 标签 + 标题 + 描述）。enter 为可选的元素入场过渡。",
       "required": ["title", "items"],
-      "optional": ["eyebrow"]
+      "optional": ["eyebrow", "enter"]
     },
     {
       "type": "timeline_scene",
       "template": "@TimelineScene",
-      "description": "横向时间线卡片（年份 + 图标 + 标题 + 描述），带进度连线。",
+      "description": "横向时间线卡片（年份 + 图标 + 标题 + 描述），带进度连线。enter 为可选的元素入场过渡。",
       "required": ["title", "events"],
-      "optional": ["eyebrow"]
+      "optional": ["eyebrow", "enter"]
     },
     {
       "type": "table_scene",
       "template": "@TableScene",
-      "description": "通用表格：列由 headers 决定，每行是与之对齐的 cells[]。highlightCell 用 \"行-列\" 标注高亮。",
+      "description": "通用表格：列由 headers 决定，每行是与之对齐的 cells[]。highlightCell 用 \"行-列\" 标注高亮。enter 为可选的行入场过渡。",
       "required": ["title", "headers", "rows"],
-      "optional": ["eyebrow", "highlightCell"]
+      "optional": ["eyebrow", "highlightCell", "enter"]
     },
     {
       "type": "comparison_scene",
       "template": "@SplitLayout",
-      "description": "左右对比双卡（基于 SplitLayout），value 走正文字号、自适应长句。",
+      "description": "左右对比双卡（基于 SplitLayout），value 走正文字号、自适应长句。enter 为可选的卡片入场过渡。",
       "required": ["leftLabel", "leftValue", "rightLabel", "rightValue"],
-      "optional": ["title"]
+      "optional": ["title", "enter"]
     },
     {
       "type": "code_scene",

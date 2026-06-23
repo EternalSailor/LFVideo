@@ -1,15 +1,11 @@
 import React from 'react';
-import {
-	AbsoluteFill,
-	interpolate,
-	spring,
-	useCurrentFrame,
-	useVideoConfig,
-} from 'remotion';
+import {AbsoluteFill} from 'remotion';
 import {z} from 'zod';
 import {SplitLayout, TitleFrame} from '../primitives';
 import {useTheme} from '../theme/ThemeContext';
 import {withAlpha} from '../theme/util';
+import {Animated} from '../animation';
+import {TRANSITION_IDS, type TransitionId} from '../animation/types';
 
 // 模板库版对比场景：基于 SplitLayout，主题驱动配色，左右两张玻璃卡。
 // 与旧 components/ComparisonCard 不同，value 走正文字号并自适应长句，
@@ -20,6 +16,7 @@ export const comparisonSchema = z.object({
 	leftValue: z.string(),
 	rightLabel: z.string(),
 	rightValue: z.string(),
+	enter: z.enum(TRANSITION_IDS).optional(),
 });
 export type ComparisonProps = z.infer<typeof comparisonSchema>;
 
@@ -27,26 +24,19 @@ const Card: React.FC<{
 	label: string;
 	value: string;
 	color: string;
-	startFrame: number;
-}> = ({label, value, color, startFrame}) => {
-	const frame = useCurrentFrame();
-	const {fps} = useVideoConfig();
-	const {colors, FONT_SIZE, SPACING, RADIUS, SPRING} = useTheme();
-
-	const progress = spring({fps, frame: frame - startFrame, config: SPRING.snappy});
-	const opacity = interpolate(progress, [0, 1], [0, 1]);
-	const translateY = interpolate(progress, [0, 1], [50, 0]);
-	const scale = interpolate(progress, [0, 1], [0.94, 1]);
+	delay: number;
+	enter: TransitionId;
+}> = ({label, value, color, delay, enter}) => {
+	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
 
 	// 长句用正文字号、短句用副标题字号，避免长句溢出。
 	const valueFontSize = value.length > 36 ? FONT_SIZE.bodyLg : FONT_SIZE.subtitle;
 	const cardBg = withAlpha(colors.bg.to, 0.5);
 
 	return (
+		<Animated enter={enter} delay={delay} distance={50} style={{height: '100%'}}>
 		<div
 			style={{
-				opacity,
-				transform: `translateY(${translateY}px) scale(${scale})`,
 				height: '100%',
 				display: 'flex',
 				flexDirection: 'column',
@@ -103,6 +93,7 @@ const Card: React.FC<{
 				{value}
 			</div>
 		</div>
+		</Animated>
 	);
 };
 
@@ -112,6 +103,7 @@ export const ComparisonScene: React.FC<ComparisonProps> = ({
 	leftValue,
 	rightLabel,
 	rightValue,
+	enter = 'rise-pop',
 }) => {
 	const {colors, fonts, SPACING} = useTheme();
 
@@ -132,8 +124,8 @@ export const ComparisonScene: React.FC<ComparisonProps> = ({
 			)}
 			<div style={{flex: title ? 0.7 : 1, position: 'relative'}}>
 				<SplitLayout
-					left={<Card label={leftLabel} value={leftValue} color={colors.accent[0]} startFrame={15} />}
-					right={<Card label={rightLabel} value={rightValue} color={colors.accent[2] ?? colors.accent[1]} startFrame={25} />}
+					left={<Card label={leftLabel} value={leftValue} color={colors.accent[0]} delay={15} enter={enter} />}
+					right={<Card label={rightLabel} value={rightValue} color={colors.accent[2] ?? colors.accent[1]} delay={25} enter={enter} />}
 				/>
 			</div>
 		</AbsoluteFill>

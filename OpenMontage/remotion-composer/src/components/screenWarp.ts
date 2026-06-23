@@ -25,6 +25,12 @@ export interface UnityBackgroundConfig {
   screenOpacity?: number;
   /** Backdrop tint (hex) for the warped UI — e.g. a blue for a hologram feel. */
   screenTint?: string;
+  /**
+   * Warp-reveal duration (frames). When > 0, the UI plane animates from a flat,
+   * camera-facing full-frame rectangle into the screen quad over the opening
+   * frames — so the perspective transform is visible. 0 / unset = static warp.
+   */
+  warpRevealFrames?: number;
 }
 
 function adj(m: number[]): number[] {
@@ -70,6 +76,48 @@ function basisToPoints(
   const m = [x1, x2, x3, y1, y2, y3, 1, 1, 1];
   const v = multmv(adj(m), [x4, y4, 1]);
   return multmm(m, [v[0], 0, 0, 0, v[1], 0, 0, 0, v[2]]);
+}
+
+/**
+ * Linearly interpolate the screen quad between the full-frame rectangle
+ * (progress = 0, UI flat & facing camera) and the target quad (progress = 1,
+ * UI seated in the room screen). Used for the warp-reveal "fly-in".
+ */
+export function lerpScreenQuad(
+  w: number,
+  h: number,
+  q: ScreenQuad,
+  progress: number
+): ScreenQuad {
+  const rect: ScreenQuad = {
+    tl: [0, 0],
+    tr: [w, 0],
+    br: [w, h],
+    bl: [0, h],
+  };
+  const L = (a: Pt, b: Pt): Pt => [
+    a[0] + (b[0] - a[0]) * progress,
+    a[1] + (b[1] - a[1]) * progress,
+  ];
+  return {
+    tl: L(rect.tl, q.tl),
+    tr: L(rect.tr, q.tr),
+    br: L(rect.br, q.br),
+    bl: L(rect.bl, q.bl),
+  };
+}
+
+/**
+ * matrix3d for an in-progress warp reveal: at progress=0 the plane fills the
+ * frame flat; at progress=1 it lands in the target quad. Wraps quadMatrix3d.
+ */
+export function animatedQuadMatrix3d(
+  w: number,
+  h: number,
+  q: ScreenQuad,
+  progress: number
+): string {
+  return quadMatrix3d(w, h, lerpScreenQuad(w, h, q, progress));
 }
 
 /**

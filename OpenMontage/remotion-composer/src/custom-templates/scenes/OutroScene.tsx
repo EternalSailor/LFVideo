@@ -8,6 +8,7 @@ import {
 } from 'remotion';
 import {z} from 'zod';
 import {useTheme} from '../theme/ThemeContext';
+import {withAlpha} from '../theme/util';
 
 export const outroSchema = z.object({
 	headline: z.string(),
@@ -26,6 +27,13 @@ export const OutroScene: React.FC<OutroProps> = ({
 	const opacity = interpolate(enter, [0, 1], [0, 1]);
 	const translateY = interpolate(enter, [0, 1], [30, 0]);
 
+	// frame 驱动的按钮脉冲（取代 CSS `button-pulse ... infinite`，3.5s 一循环）。
+	const pulse = (1 - Math.cos((frame / fps / 3.5) * Math.PI * 2)) / 2; // 0→1→0
+	const btnScale = 1 + 0.03 * pulse;
+	const btnBlur = 30 + 5 * pulse;
+	const btnSpread = -4 + 8 * pulse;
+	const btnShadow = `0 8px ${btnBlur}px ${btnSpread}px ${withAlpha(colors.accent[0], 0.4 * (1 - pulse))}, 0 8px ${btnBlur}px ${btnSpread}px ${withAlpha(colors.accent[1], 0.6 * pulse)}`;
+
 	return (
 		<AbsoluteFill
 			style={{
@@ -37,14 +45,6 @@ export const OutroScene: React.FC<OutroProps> = ({
 				transform: `translateY(${translateY}px)`,
 			}}
 		>
-			<style>{`
-				@keyframes button-pulse {
-					0% { box-shadow: 0 8px 30px -4px ${colors.accent[0]}66; transform: scale(1); }
-					50% { box-shadow: 0 8px 35px 4px ${colors.accent[1]}99; transform: scale(1.03); }
-					100% { box-shadow: 0 8px 30px -4px ${colors.accent[0]}66; transform: scale(1); }
-				}
-			`}</style>
-
 			<div
 				style={{
 					position: 'absolute',
@@ -80,7 +80,8 @@ export const OutroScene: React.FC<OutroProps> = ({
 					padding: `${SPACING.sm + 4}px ${SPACING.xl}px`,
 					borderRadius: RADIUS.pill,
 					background: `linear-gradient(135deg, ${colors.accent[0]} 0%, ${colors.accent[1]} 100%)`,
-					animation: 'button-pulse 3.5s infinite ease-in-out',
+					transform: `scale(${btnScale})`,
+					boxShadow: btnShadow,
 					letterSpacing: 1.5,
 					zIndex: 1,
 					border: '1px solid rgba(255,255,255,0.1)',

@@ -10,6 +10,9 @@ import {z} from 'zod';
 import {TitleFrame} from '../primitives';
 import {useTheme} from '../theme/ThemeContext';
 import {withAlpha} from '../theme/util';
+import {Animated} from '../animation';
+import {osc01} from '../animation/presence';
+import {TRANSITION_IDS} from '../animation/types';
 
 // 通用表格：列由 headers 决定，每行是与 headers 对齐的 cells[]（纯字符串）。
 // 不再绑定任何业务字段名。highlightCell 用 "行-列"（均 1 起，行只数数据行）
@@ -20,6 +23,7 @@ export const tableSchema = z.object({
 	headers: z.array(z.string()),
 	rows: z.array(z.array(z.string())),
 	highlightCell: z.string().optional(),
+	enter: z.enum(TRANSITION_IDS).optional(),
 });
 export type TableProps = z.infer<typeof tableSchema>;
 
@@ -42,9 +46,15 @@ const TableCell: React.FC<{
 	rowIndex,
 	dense = false,
 }) => {
+	const frame = useCurrentFrame();
+	const {fps} = useVideoConfig();
 	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
-	const blinkAnimName = `cell-blink-${rowIndex}-${colIndex}`;
 	const headerBg = withAlpha(colors.bg.to, 0.7);
+
+	// frame 驱动的高亮闪烁（取代 CSS `cell-blink ... infinite`，2s 一循环）。
+	const blink = highlighted ? osc01(frame, fps, 2) : 0;
+	const hlBorder = withAlpha(highlightColor, 0.33 + blink * (1 - 0.33));
+	const hlShadow = `0 0 ${5 + 15 * blink}px ${withAlpha(highlightColor, 0.08 + blink * (0.27 - 0.08))}`;
 
 	return (
 		<div
@@ -68,25 +78,14 @@ const TableCell: React.FC<{
 						? `${highlightColor}10`
 						: 'transparent',
 				border: highlighted
-					? `2px solid ${highlightColor}`
+					? `2px solid ${hlBorder}`
 					: `1.5px solid ${colors.line}`,
 				borderRadius: highlighted ? RADIUS.md : 0,
 				position: 'relative',
 				overflow: 'hidden',
-				transition: 'all 0.5s ease',
-				boxShadow: highlighted ? `0 0 15px ${highlightColor}25` : 'none',
-				animation: highlighted ? `${blinkAnimName} 2s infinite ease-in-out` : 'none',
+				boxShadow: highlighted ? hlShadow : 'none',
 			}}
 		>
-			{highlighted && (
-				<style>{`
-					@keyframes ${blinkAnimName} {
-						0% { border-color: ${highlightColor}55; box-shadow: 0 0 5px ${highlightColor}15; }
-						50% { border-color: ${highlightColor}ff; box-shadow: 0 0 20px ${highlightColor}44; }
-						100% { border-color: ${highlightColor}55; box-shadow: 0 0 5px ${highlightColor}15; }
-					}
-				`}</style>
-			)}
 			<span style={{zIndex: 1}}>{content}</span>
 		</div>
 	);
@@ -101,7 +100,7 @@ function parseHighlight(spec?: string): {row: number; col: number} | null {
 
 export const TableScene: React.FC<
 	TableProps & {startFrame?: number; rowStagger?: number}
-> = ({eyebrow, title, headers, rows, highlightCell, startFrame = 25, rowStagger = 15}) => {
+> = ({eyebrow, title, headers, rows, highlightCell, startFrame = 25, rowStagger = 15, enter = 'rise'}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const {colors, fonts, SPACING, RADIUS, SPRING} = useTheme();
@@ -168,21 +167,15 @@ export const TableScene: React.FC<
 
 				{rows.map((row, rowIndex) => {
 					const rowStart = startFrame + (rowIndex + 1) * rowStagger;
-					const rowProgress = spring({
-						fps,
-						frame: frame - rowStart,
-						config: SPRING.snappy,
-					});
-					const rowOpacity = interpolate(rowProgress, [0, 1], [0, 1]);
-					const rowTranslateY = interpolate(rowProgress, [0, 1], [30, 0]);
 
 					return (
-						<div
+						<Animated
 							key={`${rowIndex}-${row[0] ?? ''}`}
+							enter={enter}
+							delay={rowStart}
+							distance={30}
 							style={{
 								display: 'flex',
-								opacity: rowOpacity,
-								transform: `translateY(${rowTranslateY}px)`,
 								borderBottom:
 									rowIndex === rows.length - 1
 										? 'none'
@@ -210,7 +203,7 @@ export const TableScene: React.FC<
 									/>
 								);
 							})}
-						</div>
+						</Animated>
 					);
 				})}
 			</div>

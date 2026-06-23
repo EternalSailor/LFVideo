@@ -1,0 +1,15 @@
+{
+  "transitions": [
+    {"id": "none", "name": "无", "desc": "不做任何进出场，始终稳定态"},
+    {"id": "fade", "name": "淡入淡出", "desc": "仅透明度变化"},
+    {"id": "rise", "name": "上浮", "desc": "从下方位移进入 + 淡入"},
+    {"id": "fall", "name": "下沉", "desc": "从上方位移进入 + 淡入"},
+    {"id": "slide-left", "name": "左滑入", "desc": "从右侧滑入 + 淡入"},
+    {"id": "slide-right", "name": "右滑入", "desc": "从左侧滑入 + 淡入"},
+    {"id": "pop", "name": "弹出", "desc": "轻微放大 + 淡入"},
+    {"id": "rise-pop", "name": "上浮弹出", "desc": "上浮 + 放大 + 淡入（卡片默认）"},
+    {"id": "blur", "name": "聚焦", "desc": "从模糊到清晰 + 淡入"},
+    {"id": "wipe-up", "name": "向上擦除", "desc": "底部裁切逐渐揭示"},
+    {"id": "flip", "name": "翻入", "desc": "绕 X 轴 3D 翻转进入 + 淡入"}
+  ]
+}

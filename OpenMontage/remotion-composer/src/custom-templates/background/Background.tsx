@@ -29,6 +29,7 @@ export interface BackgroundProps {
 
 const MeshGradientBg: React.FC<{colors: Palette}> = ({colors}) => {
 	const frame = useCurrentFrame();
+	const {fps} = useVideoConfig();
 	const x1 = Math.sin(frame * 0.004) * 150 + 200;
 	const y1 = Math.cos(frame * 0.005) * 150 + 300;
 	const x2 = Math.cos(frame * 0.003) * 150 + 1500;
@@ -43,19 +44,25 @@ const MeshGradientBg: React.FC<{colors: Palette}> = ({colors}) => {
 				overflow: 'hidden',
 			}}
 		>
-			<style>{`
-				@keyframes bg-drift-slow {
-					0% { transform: scale(1) translate(0px, 0px) rotate(0deg); }
-					50% { transform: scale(1.1) translate(40px, -60px) rotate(180deg); }
-					100% { transform: scale(1) translate(0px, 0px) rotate(360deg); }
-				}
-			`}</style>
-			<div style={blob(x1, y1, 800, `${colors.accent[0]}22`, 100, 25, false)} />
-			<div style={blob(x2, y2, 800, `${colors.accent[1]}18`, 120, 30, true)} />
-			<div style={blob(x3, y3, 1000, `${colors.accent[2] ?? colors.accent[0]}12`, 140, 35, false)} />
+			<div style={blob(x1, y1, 800, `${colors.accent[0]}22`, 100, drift(frame, fps, 25, false))} />
+			<div style={blob(x2, y2, 800, `${colors.accent[1]}18`, 120, drift(frame, fps, 30, true))} />
+			<div style={blob(x3, y3, 1000, `${colors.accent[2] ?? colors.accent[0]}12`, 140, drift(frame, fps, 35, false))} />
 		</AbsoluteFill>
 	);
 };
+
+// frame 驱动的缓慢漂移（取代 CSS `@keyframes bg-drift-slow ... infinite`，
+// 后者在 Remotion 逐帧渲染下不会推进）。scale/位移用半余弦在 0↔1 往返，旋转线性累加。
+function drift(frame: number, fps: number, durSec: number, reverse: boolean): string {
+	const dir = reverse ? -1 : 1;
+	const cycle = (frame / fps / durSec) * dir;
+	const w = (1 - Math.cos(cycle * Math.PI * 2)) / 2; // 0→1→0
+	const scale = 1 + 0.1 * w;
+	const tx = 40 * w;
+	const ty = -60 * w;
+	const rot = cycle * 360;
+	return `scale(${scale}) translate(${tx}px, ${ty}px) rotate(${rot}deg)`;
+}
 
 function blob(
 	cx: number,
@@ -63,8 +70,7 @@ function blob(
 	size: number,
 	color: string,
 	blur: number,
-	dur: number,
-	reverse: boolean
+	transform: string
 ): React.CSSProperties {
 	return {
 		position: 'absolute',
@@ -75,7 +81,7 @@ function blob(
 		borderRadius: '50%',
 		background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
 		filter: `blur(${blur}px)`,
-		animation: `bg-drift-slow ${dur}s infinite ease-in-out${reverse ? ' reverse' : ''}`,
+		transform,
 	};
 }
 

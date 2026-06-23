@@ -1,6 +1,7 @@
 export * from './primitives';
 export * from './scenes';
 export * from './background';
+export * from './animation';
 export * from './theme/tokens';
 export * from './theme/fonts';
 export * from './theme/palettes';
