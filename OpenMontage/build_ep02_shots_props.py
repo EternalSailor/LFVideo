@@ -9,12 +9,12 @@ shot covers) comes straight from the SSOT JSON contract; only the on-screen
 renderable detail of each shot (the motion-engineer's authoring) lives here in
 ``SHOT_CONTENT``.
 
-Scene-template -> Explainer ``cut.type`` mapping (the engine has no
-``@SplitLayout`` cut, so split/compare shots render as ``comparison``):
+Scene-template -> Explainer ``cut.type`` mapping. Every type is a first-class
+template-library scene (see remotion-composer/src/custom-templates/registry.ts):
 
     @IntroScene    -> intro_scene     @ConceptScene  -> concept_scene
-    @TableScene    -> table_scene     @TerminalScene -> terminal_scene
-    @OutroScene    -> outro_scene     @SplitLayout   -> comparison
+    @TableScene    -> table_scene     @TerminalScene -> code_scene
+    @OutroScene    -> outro_scene     @SplitLayout   -> comparison_scene
 
 Cut timing is driven by each shot's ``duration_seconds`` (06-tts narration is
 not yet produced for this cut; once it is, swap in real segment durations from
@@ -75,9 +75,9 @@ TEMPLATE_TO_TYPE = {
     "@IntroScene": "intro_scene",
     "@ConceptScene": "concept_scene",
     "@TableScene": "table_scene",
-    "@TerminalScene": "terminal_scene",
+    "@TerminalScene": "code_scene",
     "@OutroScene": "outro_scene",
-    "@SplitLayout": "comparison",
+    "@SplitLayout": "comparison_scene",
 }
 
 
@@ -85,20 +85,20 @@ def _term(code: str) -> list[dict[str, str]]:
     return [{"kind": "out", "text": line} for line in code.split("\n")]
 
 
-# 04 table rows render through TableScene's fixed 3-column shape
-# (feature / cursor / windsurf + win). The S3 route matrix collapses the 04
-# section's 4 columns into "适用场景 / 已知坑".
+# 04 table rows -> TableScene 的通用 cells[]：每行与 headers 一一对齐
+# (方案 / 适用场景 / 已知坑)。高亮交给 cut.highlightCell（"行-列"）显式标注，
+# 不再依赖上一期遗留的领域字段。
 _ROUTE_ROWS = [
-    {"feature": "Remotion", "cursor": "前端栈、复杂排版、跨期复用", "windsurf": "顶层读 window 崩；BUSL 授权", "win": "neutral"},
-    {"feature": "Motion Canvas", "cursor": "代码演示、精确时序", "windsurf": "生态小、模板自建", "win": "neutral"},
-    {"feature": "Manim", "cursor": "数学/公式可视化", "windsurf": "排版弱、渲染慢", "win": "neutral"},
-    {"feature": "MoviePy", "cursor": "简单拼接、音轨闪避", "windsurf": "自适应排版繁琐、吃内存", "win": "neutral"},
-    {"feature": "FFmpeg", "cursor": "批量转码、字幕烧录", "windsurf": "命令晦涩难调试", "win": "neutral"},
+    ["Remotion", "前端栈、复杂排版、跨期复用", "顶层读 window 崩；BUSL 授权"],
+    ["Motion Canvas", "代码演示、精确时序", "生态小、模板自建"],
+    ["Manim", "数学/公式可视化", "排版弱、渲染慢"],
+    ["MoviePy", "简单拼接、音轨闪避", "自适应排版繁琐、吃内存"],
+    ["FFmpeg", "批量转码、字幕烧录", "命令晦涩难调试"],
 ]
 _AVATAR_ROWS = [
-    {"feature": "真人出镜", "cursor": "最可信、有温度", "windsurf": "要露脸、不可编程复用、隐私成本", "win": "neutral"},
-    {"feature": "写实/对口型数字人", "cursor": "像真主播", "windsurf": "易掉恐怖谷、可信度反崩；口型重活", "win": "neutral"},
-    {"feature": "3D 风格化 VRM", "cursor": "风格统一、可编程、渲一次到处用", "windsurf": "要建模与动作绑定，可交给 AI", "win": "cursor"},
+    ["真人出镜", "最可信、有温度", "要露脸、不可编程复用、隐私成本"],
+    ["写实/对口型数字人", "像真主播", "易掉恐怖谷、可信度反崩；口型重活"],
+    ["3D 风格化 VRM", "风格统一、可编程、渲一次到处用", "要建模与动作绑定，可交给 AI"],
 ]
 
 # Renderable on-screen content per shot id. Type-specific fields satisfy the

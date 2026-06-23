@@ -5,7 +5,7 @@ import {
 	useCurrentFrame,
 	useVideoConfig,
 } from 'remotion';
-import {COLORS, FONT_SIZE, SPACING, SPRING} from '../theme/tokens';
+import {useTheme} from '../theme/ThemeContext';
 
 interface Props {
 	title: string;
@@ -22,6 +22,7 @@ export const TitleFrame: React.FC<Props> = ({
 }) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
+	const {colors, FONT_SIZE, SPACING, SPRING} = useTheme();
 
 	const progress = spring({
 		fps,
@@ -49,7 +50,7 @@ export const TitleFrame: React.FC<Props> = ({
 					style={{
 						fontSize: FONT_SIZE.caption,
 						letterSpacing: 4,
-						color: COLORS.text.muted,
+						color: colors.text.muted,
 						marginBottom: SPACING.sm,
 						textTransform: 'uppercase',
 						fontWeight: 600,
@@ -62,7 +63,7 @@ export const TitleFrame: React.FC<Props> = ({
 				style={{
 					fontSize: FONT_SIZE.display,
 					fontWeight: 900,
-					color: COLORS.text.primary,
+					color: colors.text.primary,
 					lineHeight: 1.1,
 					marginBottom: SPACING.sm,
 				}}
@@ -73,7 +74,7 @@ export const TitleFrame: React.FC<Props> = ({
 				style={{
 					width: lineWidth,
 					height: 4,
-					background: `linear-gradient(90deg, ${COLORS.accent[0]}, ${COLORS.accent[1]})`,
+					background: `linear-gradient(90deg, ${colors.accent[0]}, ${colors.accent[1]})`,
 					borderRadius: 2,
 				}}
 			/>

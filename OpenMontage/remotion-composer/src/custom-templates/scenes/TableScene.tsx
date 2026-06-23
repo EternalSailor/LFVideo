@@ -6,79 +6,84 @@ import {
 	useCurrentFrame,
 	useVideoConfig,
 } from 'remotion';
-import {AnimatedBackground, TitleFrame} from '../primitives';
-import type {BackgroundVariant} from '../primitives';
-import {COLORS, FONT_SIZE, SPACING, RADIUS, SPRING} from '../theme/tokens';
-import {FONT_FAMILY} from '../theme/fonts';
+import {z} from 'zod';
+import {TitleFrame} from '../primitives';
+import {useTheme} from '../theme/ThemeContext';
+import {withAlpha} from '../theme/util';
 
-export interface TableRow {
-	feature: string;
-	cursor: string;
-	windsurf: string;
-	win: 'cursor' | 'windsurf' | 'neutral';
-}
-
-interface Props {
-	eyebrow?: string;
-	title: string;
-	headers: string[]; // e.g. ["对比项", "Cursor Rules (.mdc)", "Windsurf (Workflows)"]
-	rows: TableRow[];
-	background?: BackgroundVariant;
-	startFrame?: number;
-	rowStagger?: number;
-	highlightCell?: string; // row-col indexing (e.g. "2-3" or "3-3") to blink-highlight
-}
+// 通用表格：列由 headers 决定，每行是与 headers 对齐的 cells[]（纯字符串）。
+// 不再绑定任何业务字段名。highlightCell 用 "行-列"（均 1 起，行只数数据行）
+// 标注需要强调的单元格，到点闪烁高亮。
+export const tableSchema = z.object({
+	eyebrow: z.string().optional(),
+	title: z.string(),
+	headers: z.array(z.string()),
+	rows: z.array(z.array(z.string())),
+	highlightCell: z.string().optional(),
+});
+export type TableProps = z.infer<typeof tableSchema>;
 
 const TableCell: React.FC<{
 	content: string;
 	isHeader?: boolean;
-	isWinner?: boolean;
-	winColor?: string;
+	highlighted?: boolean;
+	highlightColor: string;
 	align?: 'left' | 'center';
 	colIndex: number;
 	rowIndex: number;
-	highlightActive: boolean;
 	dense?: boolean;
-}> = ({content, isHeader = false, isWinner = false, winColor = COLORS.accent[1], align = 'left', colIndex, rowIndex, highlightActive, dense = false}) => {
+}> = ({
+	content,
+	isHeader = false,
+	highlighted = false,
+	highlightColor,
+	align = 'left',
+	colIndex,
+	rowIndex,
+	dense = false,
+}) => {
+	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
 	const blinkAnimName = `cell-blink-${rowIndex}-${colIndex}`;
+	const headerBg = withAlpha(colors.bg.to, 0.7);
 
 	return (
 		<div
 			style={{
 				flex: colIndex === 0 ? 1.2 : 1.5,
 				padding: `${dense ? SPACING.sm : SPACING.md}px ${SPACING.lg}px`,
-				fontSize: isHeader ? FONT_SIZE.body + (dense ? 0 : 2) : FONT_SIZE.body - (dense ? 2 : 1),
+				fontSize: isHeader
+					? FONT_SIZE.body + (dense ? 0 : 2)
+					: FONT_SIZE.body - (dense ? 2 : 1),
 				fontWeight: isHeader ? 900 : colIndex === 0 ? 800 : 500,
-				color: isHeader 
-					? COLORS.text.primary 
-					: colIndex === 0 
-						? COLORS.text.primary 
-						: COLORS.text.secondary,
+				color:
+					isHeader || colIndex === 0
+						? colors.text.primary
+						: colors.text.secondary,
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: align === 'center' ? 'center' : 'flex-start',
-				background: isHeader 
-					? 'rgba(40, 26, 44, 0.7)' 
-					: isWinner && highlightActive
-						? `${winColor}10` 
+				background: isHeader
+					? headerBg
+					: highlighted
+						? `${highlightColor}10`
 						: 'transparent',
-				border: isWinner && highlightActive
-					? `2px solid ${winColor}`
-					: '1.5px solid rgba(255, 255, 255, 0.05)',
-				borderRadius: isWinner && highlightActive ? RADIUS.md : 0,
+				border: highlighted
+					? `2px solid ${highlightColor}`
+					: `1.5px solid ${colors.line}`,
+				borderRadius: highlighted ? RADIUS.md : 0,
 				position: 'relative',
 				overflow: 'hidden',
 				transition: 'all 0.5s ease',
-				boxShadow: isWinner && highlightActive ? `0 0 15px ${winColor}25` : 'none',
-				animation: isWinner && highlightActive ? `${blinkAnimName} 2s infinite ease-in-out` : 'none',
+				boxShadow: highlighted ? `0 0 15px ${highlightColor}25` : 'none',
+				animation: highlighted ? `${blinkAnimName} 2s infinite ease-in-out` : 'none',
 			}}
 		>
-			{isWinner && highlightActive && (
+			{highlighted && (
 				<style>{`
 					@keyframes ${blinkAnimName} {
-						0% { border-color: ${winColor}55; box-shadow: 0 0 5px ${winColor}15; }
-						50% { border-color: ${winColor}ff; box-shadow: 0 0 20px ${winColor}44; }
-						100% { border-color: ${winColor}55; box-shadow: 0 0 5px ${winColor}15; }
+						0% { border-color: ${highlightColor}55; box-shadow: 0 0 5px ${highlightColor}15; }
+						50% { border-color: ${highlightColor}ff; box-shadow: 0 0 20px ${highlightColor}44; }
+						100% { border-color: ${highlightColor}55; box-shadow: 0 0 5px ${highlightColor}15; }
 					}
 				`}</style>
 			)}
@@ -87,153 +92,128 @@ const TableCell: React.FC<{
 	);
 };
 
-export const TableScene: React.FC<Props> = ({
-	eyebrow,
-	title,
-	headers,
-	rows,
-	background = 'gradient',
-	startFrame = 25,
-	rowStagger = 15,
-	highlightCell,
-}) => {
+function parseHighlight(spec?: string): {row: number; col: number} | null {
+	if (!spec) return null;
+	const m = /^(\d+)-(\d+)$/.exec(spec.trim());
+	if (!m) return null;
+	return {row: parseInt(m[1], 10), col: parseInt(m[2], 10)};
+}
+
+export const TableScene: React.FC<
+	TableProps & {startFrame?: number; rowStagger?: number}
+> = ({eyebrow, title, headers, rows, highlightCell, startFrame = 25, rowStagger = 15}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
+	const {colors, fonts, SPACING, RADIUS, SPRING} = useTheme();
 
-	// Compact layout once the table has many rows, so tall tables stay inside
-	// the frame and clear of the bottom caption safe-area.
 	const dense = rows.length > 4;
+	const hl = parseHighlight(highlightCell);
+	const highlightActive = frame > 110;
 
-	// Header row pop-up animation
-	const headerProgress = spring({
-		fps,
-		frame: frame - startFrame,
-		config: SPRING.snappy,
-	});
-
+	const headerProgress = spring({fps, frame: frame - startFrame, config: SPRING.snappy});
 	const headerOpacity = interpolate(headerProgress, [0, 1], [0, 1]);
 	const headerScaleY = interpolate(headerProgress, [0, 1], [0.8, 1]);
 
-	// Highlight threshold frame (110f / ~3.6 seconds is active)
-	const highlightActive = frame > 110;
+	const wrapperBg = withAlpha(colors.bg.to, 0.3);
+	const headerRowBg = withAlpha(colors.bg.to, 0.8);
 
 	return (
-		<AnimatedBackground variant={background}>
-			<AbsoluteFill
+		<AbsoluteFill
+			style={{
+				fontFamily: fonts.family,
+				padding: `${SPACING.xl}px ${SPACING.gutter}px 180px`,
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'center',
+			}}
+		>
+			<TitleFrame eyebrow={eyebrow} title={title} />
+
+			<div
 				style={{
-					fontFamily: FONT_FAMILY,
-					// Reserve a bottom safe-area (~180px) for the caption overlay so
-					// tall tables never crowd or sit under the burned-in subtitles.
-					padding: `${SPACING.xl}px ${SPACING.gutter}px 180px`,
 					display: 'flex',
 					flexDirection: 'column',
-					justifyContent: 'center',
+					background: wrapperBg,
+					borderRadius: RADIUS.lg,
+					border: `1.5px solid ${colors.line}`,
+					backdropFilter: 'blur(16px)',
+					boxShadow: '0 20px 50px -10px rgba(0, 0, 0, 0.7)',
+					overflow: 'hidden',
+					marginTop: dense ? SPACING.lg : SPACING.xl,
 				}}
 			>
-				<TitleFrame eyebrow={eyebrow} title={title} />
-
-				{/* Table Wrapper Grid */}
 				<div
 					style={{
 						display: 'flex',
-						flexDirection: 'column',
-						background: 'rgba(40, 26, 44, 0.3)',
-						borderRadius: RADIUS.lg,
-						border: '1.5px solid rgba(255, 255, 255, 0.08)',
-						backdropFilter: 'blur(16px)',
-						boxShadow: '0 20px 50px -10px rgba(0, 0, 0, 0.7)',
-						overflow: 'hidden',
-						marginTop: dense ? SPACING.lg : SPACING.xl,
+						background: headerRowBg,
+						borderBottom: `2px solid ${colors.line}`,
+						opacity: headerOpacity,
+						transform: `scaleY(${headerScaleY})`,
+						transformOrigin: 'top',
 					}}
 				>
-					{/* Table Header */}
-					<div
-						style={{
-							display: 'flex',
-							background: 'rgba(40, 26, 44, 0.8)',
-							borderBottom: '2px solid rgba(255, 255, 255, 0.15)',
-							opacity: headerOpacity,
-							transform: `scaleY(${headerScaleY})`,
-							transformOrigin: 'top',
-						}}
-					>
-						{headers.map((header, colIndex) => (
-							<TableCell
-								key={header}
-								content={header}
-								isHeader
-								colIndex={colIndex}
-								rowIndex={0}
-								align={colIndex === 0 ? 'left' : 'center'}
-								highlightActive={false}
-								dense={dense}
-							/>
-						))}
-					</div>
-
-					{/* Table Rows */}
-					{rows.map((row, rowIndex) => {
-						const rowStart = startFrame + (rowIndex + 1) * rowStagger;
-						
-						// Staggered spring for row fade/slide
-						const rowProgress = spring({
-							fps,
-							frame: frame - rowStart,
-							config: SPRING.snappy,
-						});
-
-						const rowOpacity = interpolate(rowProgress, [0, 1], [0, 1]);
-						const rowTranslateY = interpolate(rowProgress, [0, 1], [30, 0]);
-
-						return (
-							<div
-								key={row.feature}
-								style={{
-									display: 'flex',
-									opacity: rowOpacity,
-									transform: `translateY(${rowTranslateY}px)`,
-									borderBottom: rowIndex === rows.length - 1 ? 'none' : '1.5px solid rgba(255, 255, 255, 0.05)',
-									background: rowIndex % 2 === 1 ? 'rgba(255, 255, 255, 0.015)' : 'transparent',
-								}}
-							>
-								{/* Feature label cell */}
-								<TableCell
-									content={row.feature}
-									colIndex={0}
-									rowIndex={rowIndex + 1}
-									align="left"
-									highlightActive={false}
-									dense={dense}
-								/>
-
-								{/* Cursor Cell */}
-								<TableCell
-									content={row.cursor}
-									colIndex={1}
-									rowIndex={rowIndex + 1}
-									isWinner={row.win === 'cursor'}
-									winColor={COLORS.accent[0]}
-									align="center"
-									highlightActive={highlightActive}
-									dense={dense}
-								/>
-
-								{/* Windsurf Cell */}
-								<TableCell
-									content={row.windsurf}
-									colIndex={2}
-									rowIndex={rowIndex + 1}
-									isWinner={row.win === 'windsurf'}
-									winColor={COLORS.accent[1]}
-									align="center"
-									highlightActive={highlightActive}
-									dense={dense}
-								/>
-							</div>
-						);
-					})}
+					{headers.map((header, colIndex) => (
+						<TableCell
+							key={header}
+							content={header}
+							isHeader
+							colIndex={colIndex}
+							rowIndex={0}
+							align={colIndex === 0 ? 'left' : 'center'}
+							highlightColor={colors.accent[1]}
+							dense={dense}
+						/>
+					))}
 				</div>
-			</AbsoluteFill>
-		</AnimatedBackground>
+
+				{rows.map((row, rowIndex) => {
+					const rowStart = startFrame + (rowIndex + 1) * rowStagger;
+					const rowProgress = spring({
+						fps,
+						frame: frame - rowStart,
+						config: SPRING.snappy,
+					});
+					const rowOpacity = interpolate(rowProgress, [0, 1], [0, 1]);
+					const rowTranslateY = interpolate(rowProgress, [0, 1], [30, 0]);
+
+					return (
+						<div
+							key={`${rowIndex}-${row[0] ?? ''}`}
+							style={{
+								display: 'flex',
+								opacity: rowOpacity,
+								transform: `translateY(${rowTranslateY}px)`,
+								borderBottom:
+									rowIndex === rows.length - 1
+										? 'none'
+										: `1.5px solid ${colors.line}`,
+								background:
+									rowIndex % 2 === 1 ? withAlpha(colors.text.primary, 0.015) : 'transparent',
+							}}
+						>
+							{headers.map((_, colIndex) => {
+								const cellHighlighted =
+									highlightActive &&
+									hl !== null &&
+									hl.row === rowIndex + 1 &&
+									hl.col === colIndex + 1;
+								return (
+									<TableCell
+										key={colIndex}
+										content={row[colIndex] ?? ''}
+										colIndex={colIndex}
+										rowIndex={rowIndex + 1}
+										align={colIndex === 0 ? 'left' : 'center'}
+										highlighted={cellHighlighted}
+										highlightColor={colors.accent[colIndex % colors.accent.length]}
+										dense={dense}
+									/>
+								);
+							})}
+						</div>
+					);
+				})}
+			</div>
+		</AbsoluteFill>
 	);
 };

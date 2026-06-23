@@ -154,36 +154,31 @@
         "已知坑"
       ],
       "rows": [
-        {
-          "feature": "Remotion",
-          "cursor": "前端栈、复杂排版、跨期复用",
-          "windsurf": "顶层读 window 崩；BUSL 授权",
-          "win": "neutral"
-        },
-        {
-          "feature": "Motion Canvas",
-          "cursor": "代码演示、精确时序",
-          "windsurf": "生态小、模板自建",
-          "win": "neutral"
-        },
-        {
-          "feature": "Manim",
-          "cursor": "数学/公式可视化",
-          "windsurf": "排版弱、渲染慢",
-          "win": "neutral"
-        },
-        {
-          "feature": "MoviePy",
-          "cursor": "简单拼接、音轨闪避",
-          "windsurf": "自适应排版繁琐、吃内存",
-          "win": "neutral"
-        },
-        {
-          "feature": "FFmpeg",
-          "cursor": "批量转码、字幕烧录",
-          "windsurf": "命令晦涩难调试",
-          "win": "neutral"
-        }
+        [
+          "Remotion",
+          "前端栈、复杂排版、跨期复用",
+          "顶层读 window 崩；BUSL 授权"
+        ],
+        [
+          "Motion Canvas",
+          "代码演示、精确时序",
+          "生态小、模板自建"
+        ],
+        [
+          "Manim",
+          "数学/公式可视化",
+          "排版弱、渲染慢"
+        ],
+        [
+          "MoviePy",
+          "简单拼接、音轨闪避",
+          "自适应排版繁琐、吃内存"
+        ],
+        [
+          "FFmpeg",
+          "批量转码、字幕烧录",
+          "命令晦涩难调试"
+        ]
       ]
     },
     {
@@ -201,36 +196,31 @@
         "已知坑"
       ],
       "rows": [
-        {
-          "feature": "Remotion",
-          "cursor": "前端栈、复杂排版、跨期复用",
-          "windsurf": "顶层读 window 崩；BUSL 授权",
-          "win": "neutral"
-        },
-        {
-          "feature": "Motion Canvas",
-          "cursor": "代码演示、精确时序",
-          "windsurf": "生态小、模板自建",
-          "win": "neutral"
-        },
-        {
-          "feature": "Manim",
-          "cursor": "数学/公式可视化",
-          "windsurf": "排版弱、渲染慢",
-          "win": "neutral"
-        },
-        {
-          "feature": "MoviePy",
-          "cursor": "简单拼接、音轨闪避",
-          "windsurf": "自适应排版繁琐、吃内存",
-          "win": "neutral"
-        },
-        {
-          "feature": "FFmpeg",
-          "cursor": "批量转码、字幕烧录",
-          "windsurf": "命令晦涩难调试",
-          "win": "neutral"
-        }
+        [
+          "Remotion",
+          "前端栈、复杂排版、跨期复用",
+          "顶层读 window 崩；BUSL 授权"
+        ],
+        [
+          "Motion Canvas",
+          "代码演示、精确时序",
+          "生态小、模板自建"
+        ],
+        [
+          "Manim",
+          "数学/公式可视化",
+          "排版弱、渲染慢"
+        ],
+        [
+          "MoviePy",
+          "简单拼接、音轨闪避",
+          "自适应排版繁琐、吃内存"
+        ],
+        [
+          "FFmpeg",
+          "批量转码、字幕烧录",
+          "命令晦涩难调试"
+        ]
       ],
       "highlightCell": "1-3"
     },
@@ -249,42 +239,37 @@
         "已知坑"
       ],
       "rows": [
-        {
-          "feature": "Remotion",
-          "cursor": "前端栈、复杂排版、跨期复用",
-          "windsurf": "顶层读 window 崩；BUSL 授权",
-          "win": "neutral"
-        },
-        {
-          "feature": "Motion Canvas",
-          "cursor": "代码演示、精确时序",
-          "windsurf": "生态小、模板自建",
-          "win": "neutral"
-        },
-        {
-          "feature": "Manim",
-          "cursor": "数学/公式可视化",
-          "windsurf": "排版弱、渲染慢",
-          "win": "neutral"
-        },
-        {
-          "feature": "MoviePy",
-          "cursor": "简单拼接、音轨闪避",
-          "windsurf": "自适应排版繁琐、吃内存",
-          "win": "neutral"
-        },
-        {
-          "feature": "FFmpeg",
-          "cursor": "批量转码、字幕烧录",
-          "windsurf": "命令晦涩难调试",
-          "win": "neutral"
-        }
+        [
+          "Remotion",
+          "前端栈、复杂排版、跨期复用",
+          "顶层读 window 崩；BUSL 授权"
+        ],
+        [
+          "Motion Canvas",
+          "代码演示、精确时序",
+          "生态小、模板自建"
+        ],
+        [
+          "Manim",
+          "数学/公式可视化",
+          "排版弱、渲染慢"
+        ],
+        [
+          "MoviePy",
+          "简单拼接、音轨闪避",
+          "自适应排版繁琐、吃内存"
+        ],
+        [
+          "FFmpeg",
+          "批量转码、字幕烧录",
+          "命令晦涩难调试"
+        ]
       ],
       "highlightCell": "3-3"
     },
     {
       "id": "shot-3.4",
-      "type": "comparison",
+      "type": "comparison_scene",
       "source": "",
       "in_seconds": 111.033,
       "out_seconds": 124.7,
@@ -296,7 +281,7 @@
     },
     {
       "id": "shot-3.5",
-      "type": "comparison",
+      "type": "comparison_scene",
       "source": "",
       "in_seconds": 124.7,
       "out_seconds": 143.467,
@@ -308,7 +293,7 @@
     },
     {
       "id": "shot-3.6",
-      "type": "comparison",
+      "type": "comparison_scene",
       "source": "",
       "in_seconds": 143.467,
       "out_seconds": 148.3,
@@ -380,7 +365,7 @@
     },
     {
       "id": "shot-4.3",
-      "type": "terminal_scene",
+      "type": "code_scene",
       "source": "",
       "in_seconds": 180.467,
       "out_seconds": 192.333,
@@ -423,7 +408,7 @@
     },
     {
       "id": "shot-4.4",
-      "type": "terminal_scene",
+      "type": "code_scene",
       "source": "",
       "in_seconds": 192.333,
       "out_seconds": 201.467,
@@ -458,7 +443,7 @@
     },
     {
       "id": "shot-4.5",
-      "type": "comparison",
+      "type": "comparison_scene",
       "source": "",
       "in_seconds": 201.467,
       "out_seconds": 213.967,
@@ -494,7 +479,7 @@
     },
     {
       "id": "shot-5.1",
-      "type": "terminal_scene",
+      "type": "code_scene",
       "source": "",
       "in_seconds": 222.933,
       "out_seconds": 244.5,
@@ -521,7 +506,7 @@
     },
     {
       "id": "shot-5.2",
-      "type": "terminal_scene",
+      "type": "code_scene",
       "source": "",
       "in_seconds": 244.5,
       "out_seconds": 248.4,
@@ -617,24 +602,21 @@
         "坑 / 代价"
       ],
       "rows": [
-        {
-          "feature": "真人出镜",
-          "cursor": "最可信、有温度",
-          "windsurf": "要露脸、不可编程复用、隐私成本",
-          "win": "neutral"
-        },
-        {
-          "feature": "写实/对口型数字人",
-          "cursor": "像真主播",
-          "windsurf": "易掉恐怖谷、可信度反崩；口型重活",
-          "win": "neutral"
-        },
-        {
-          "feature": "3D 风格化 VRM",
-          "cursor": "风格统一、可编程、渲一次到处用",
-          "windsurf": "要建模与动作绑定，可交给 AI",
-          "win": "cursor"
-        }
+        [
+          "真人出镜",
+          "最可信、有温度",
+          "要露脸、不可编程复用、隐私成本"
+        ],
+        [
+          "写实/对口型数字人",
+          "像真主播",
+          "易掉恐怖谷、可信度反崩；口型重活"
+        ],
+        [
+          "3D 风格化 VRM",
+          "风格统一、可编程、渲一次到处用",
+          "要建模与动作绑定，可交给 AI"
+        ]
       ]
     },
     {
@@ -652,24 +634,21 @@
         "坑 / 代价"
       ],
       "rows": [
-        {
-          "feature": "真人出镜",
-          "cursor": "最可信、有温度",
-          "windsurf": "要露脸、不可编程复用、隐私成本",
-          "win": "neutral"
-        },
-        {
-          "feature": "写实/对口型数字人",
-          "cursor": "像真主播",
-          "windsurf": "易掉恐怖谷、可信度反崩；口型重活",
-          "win": "neutral"
-        },
-        {
-          "feature": "3D 风格化 VRM",
-          "cursor": "风格统一、可编程、渲一次到处用",
-          "windsurf": "要建模与动作绑定，可交给 AI",
-          "win": "cursor"
-        }
+        [
+          "真人出镜",
+          "最可信、有温度",
+          "要露脸、不可编程复用、隐私成本"
+        ],
+        [
+          "写实/对口型数字人",
+          "像真主播",
+          "易掉恐怖谷、可信度反崩；口型重活"
+        ],
+        [
+          "3D 风格化 VRM",
+          "风格统一、可编程、渲一次到处用",
+          "要建模与动作绑定，可交给 AI"
+        ]
       ],
       "highlightCell": "3-1"
     },
@@ -1534,7 +1513,7 @@
     "bgOffsetYpx": 50
   },
   "unityBackground": {
-    "enabled": true,
+    "enabled": false,
     "image": "UnityBG.png",
     "screenQuad": {
       "tl": [

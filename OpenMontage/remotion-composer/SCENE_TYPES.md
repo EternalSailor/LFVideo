@@ -16,15 +16,35 @@ When you add a new component, append it here and in `src/components/index.ts`.
 | `hero_title` | `HeroTitle` | `text` | `heroSubtitle`, `backgroundVideo`, `backgroundOverlay` | Title/end card |
 | `stat_card` | `StatCard` | `stat` | `subtitle`, `accentColor`, `backgroundVideo` | A single big number |
 | `callout` | `CalloutBox` | `text` | `callout_type` (info/warning/tip/quote), `title`, `backgroundVideo` | Boxed message with bullets |
-| `comparison` | `ComparisonCard` | `leftLabel`, `leftValue`, `rightLabel`, `rightValue` | `title`, `backgroundColor` | Side-by-side compare |
+| `comparison` | `ComparisonScene` | `leftLabel`, `leftValue`, `rightLabel`, `rightValue` | `title` | Side-by-side compare (legacy alias of `comparison_scene`) |
 | `bar_chart` | `BarChart` | `chartData` | `chartAnimation`, `showValues`, `showGrid`, `backgroundVideo` | Animated bars |
 | `line_chart` | `LineChart` | `chartSeries` | `chartAnimation`, `xLabel`, `yLabel`, `showMarkers` | Animated line |
 | `pie_chart` | `PieChart` | `chartData` | `donut`, `centerLabel`, `centerValue`, `showLegend` | Pie / donut |
 | `kpi_grid` | `KPIGrid` | `chartData` | `title`, `columns`, `chartAnimation` | 2–4 column KPI grid |
 | `progress_bar` | `ProgressBar` | `progress` | `progressLabel`, `progressColor`, `progressSegments` | Animated progress |
 | `anime_scene` | `AnimeScene` | `images` (list) | `particles`, `lightingFrom`, `lightingTo`, `vignette` | Still-image anime scene with particles + camera motion |
-| **`terminal_scene`** | **`TerminalScene`** | **`steps`** (list of cmd/out/pause/pill) | **`terminalTitle`, `prompt`, `accentColor`** | **Synthetic terminal animation — NO real capture needed. See [`.agents/skills/synthetic-screen-recording/SKILL.md`](../.agents/skills/synthetic-screen-recording/SKILL.md)** |
+| **`terminal_scene`** | **`CodeScene`** | **`steps`** (list of cmd/out/pause/pill) | **`terminalTitle`, `prompt`** | **Synthetic terminal animation — NO real capture needed (legacy alias of `code_scene`). See [`.agents/skills/synthetic-screen-recording/SKILL.md`](../.agents/skills/synthetic-screen-recording/SKILL.md)** |
 | **`screenshot_scene`** | **`ScreenshotScene`** | **`backgroundImage`** (path in `public/`), **`screenshotSteps`** (list of overlays) | **`screenshotSize` (natural px w/h), `cursorStartAt`, `accentColor`** | **Approach-1 synthetic UI — drop any screenshot, animate scripted overlays on top (cursor, click_pulse, type_into, bubble_append, typing_dots, highlight_box, callout_balloon). Viewer-indistinguishable from a real recording for 15–30s focused demos. Coordinates are normalized (0–1) against the contain-fit rect. See [`.agents/skills/synthetic-ui-recording/SKILL.md`](../.agents/skills/synthetic-ui-recording/SKILL.md) (planned).** |
+
+---
+
+<!-- BEGIN AUTO-GENERATED: template-scenes -->
+
+## Template-library scenes (`custom-templates`)
+
+Auto-generated from `src/custom-templates/scene-types.json` by `scripts/gen_scene_types_md.py` — **do not edit by hand**. These scenes render fully transparent over the single independent `Background` layer and read colors/fonts from `useTheme()`.
+
+| `type` | Template | Required fields | Optional fields | Purpose |
+|---|---|---|---|---|
+| `intro_scene` | `@IntroScene` | `title` | `subtitle` | 全屏开场标题（渐变描边主标题 + 可选副标题）。 |
+| `outro_scene` | `@OutroScene` | `headline` | `cta` | 全屏收尾（大标题 + 脉冲 CTA 按钮）。 |
+| `concept_scene` | `@ConceptScene` | `title`, `items` | `eyebrow` | 纵向概念卡列表（图标 + 标签 + 标题 + 描述）。 |
+| `timeline_scene` | `@TimelineScene` | `title`, `events` | `eyebrow` | 横向时间线卡片（年份 + 图标 + 标题 + 描述），带进度连线。 |
+| `table_scene` | `@TableScene` | `title`, `headers`, `rows` | `eyebrow`, `highlightCell` | 通用表格：列由 headers 决定，每行是与之对齐的 cells[]。highlightCell 用 "行-列" 标注高亮。 |
+| `comparison_scene` | `@SplitLayout` | `leftLabel`, `leftValue`, `rightLabel`, `rightValue` | `title` | 左右对比双卡（基于 SplitLayout），value 走正文字号、自适应长句。 |
+| `code_scene` | `@TerminalScene` | `steps` | `terminalTitle`, `prompt` | 合成终端 / 代码场景：主题驱动配色、等宽字体，step 协议 cmd/out/pause/pill。 |
+
+<!-- END AUTO-GENERATED: template-scenes -->
 
 ---
 

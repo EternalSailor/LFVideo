@@ -6,26 +6,25 @@ import {
 	useCurrentFrame,
 	useVideoConfig,
 } from 'remotion';
-import {AnimatedBackground, TitleFrame} from '../primitives';
-import type {BackgroundVariant} from '../primitives';
-import {COLORS, FONT_SIZE, SPACING, RADIUS, SPRING} from '../theme/tokens';
-import {FONT_FAMILY} from '../theme/fonts';
+import {z} from 'zod';
+import {TitleFrame} from '../primitives';
+import {useTheme} from '../theme/ThemeContext';
+import {withAlpha} from '../theme/util';
 
-export interface TimelineEvent {
-	year: string;
-	title: string;
-	desc: string;
-	icon: string;
-}
+export const timelineEventSchema = z.object({
+	year: z.string(),
+	title: z.string(),
+	desc: z.string(),
+	icon: z.string(),
+});
+export type TimelineEvent = z.infer<typeof timelineEventSchema>;
 
-interface Props {
-	eyebrow?: string;
-	title: string;
-	events: TimelineEvent[];
-	background?: BackgroundVariant;
-	startFrame?: number;
-	stagger?: number;
-}
+export const timelineSchema = z.object({
+	eyebrow: z.string().optional(),
+	title: z.string(),
+	events: z.array(timelineEventSchema),
+});
+export type TimelineProps = z.infer<typeof timelineSchema>;
 
 const TimelineCard: React.FC<{
 	event: TimelineEvent;
@@ -35,6 +34,7 @@ const TimelineCard: React.FC<{
 }> = ({event, color, startFrame, index}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
+	const {colors, FONT_SIZE, SPACING, RADIUS, SPRING} = useTheme();
 
 	const progress = spring({
 		fps,
@@ -47,6 +47,8 @@ const TimelineCard: React.FC<{
 	const scale = interpolate(progress, [0, 1], [0.9, 1]);
 
 	const glowAnimName = `timeline-glow-${index}`;
+	const cardBg = withAlpha(colors.bg.to, 0.4);
+	const iconBg = withAlpha(colors.bg.to, 0.6);
 
 	return (
 		<div
@@ -54,7 +56,7 @@ const TimelineCard: React.FC<{
 				opacity,
 				transform: `translateY(${translateY}px) scale(${scale})`,
 				flex: 1,
-				background: 'rgba(40, 26, 44, 0.4)',
+				background: cardBg,
 				border: `1.5px solid ${color}33`,
 				borderRadius: RADIUS.lg,
 				padding: `${SPACING.md + 4}px ${SPACING.md}px`,
@@ -78,7 +80,6 @@ const TimelineCard: React.FC<{
 				}
 			`}</style>
 
-			{/* Soft Radial Glow */}
 			<div
 				style={{
 					position: 'absolute',
@@ -91,7 +92,6 @@ const TimelineCard: React.FC<{
 				}}
 			/>
 
-			{/* Floating Year Bubble */}
 			<div
 				style={{
 					background: `${color}18`,
@@ -109,13 +109,12 @@ const TimelineCard: React.FC<{
 				{event.year}
 			</div>
 
-			{/* Round Icon */}
 			<div
 				style={{
 					width: 64,
 					height: 64,
 					borderRadius: '50%',
-					background: 'rgba(40, 26, 44, 0.6)',
+					background: iconBg,
 					border: `1.5px solid ${color}44`,
 					display: 'flex',
 					alignItems: 'center',
@@ -128,12 +127,11 @@ const TimelineCard: React.FC<{
 				{event.icon}
 			</div>
 
-			{/* Text Section */}
 			<div
 				style={{
 					fontSize: FONT_SIZE.subtitle - 2,
 					fontWeight: 800,
-					color: COLORS.text.primary,
+					color: colors.text.primary,
 					marginBottom: SPACING.sm,
 					letterSpacing: -0.5,
 				}}
@@ -144,7 +142,7 @@ const TimelineCard: React.FC<{
 			<div
 				style={{
 					fontSize: FONT_SIZE.body - 2,
-					color: COLORS.text.secondary,
+					color: colors.text.secondary,
 					lineHeight: 1.6,
 				}}
 			>
@@ -154,18 +152,13 @@ const TimelineCard: React.FC<{
 	);
 };
 
-export const TimelineScene: React.FC<Props> = ({
-	eyebrow,
-	title,
-	events,
-	background = 'gradient',
-	startFrame = 20,
-	stagger = 20,
-}) => {
+export const TimelineScene: React.FC<
+	TimelineProps & {startFrame?: number; stagger?: number}
+> = ({eyebrow, title, events, startFrame = 20, stagger = 20}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
+	const {colors, fonts, SPACING} = useTheme();
 
-	// Line running progress animation
 	const lineProgress = spring({
 		fps,
 		frame: frame - startFrame,
@@ -179,68 +172,64 @@ export const TimelineScene: React.FC<Props> = ({
 	const lineWidth = interpolate(lineProgress, [0, 1], [0, 100]);
 
 	return (
-		<AnimatedBackground variant={background}>
-			<AbsoluteFill
+		<AbsoluteFill
+			style={{
+				fontFamily: fonts.family,
+				padding: `${SPACING.xl}px ${SPACING.gutter}px`,
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'center',
+				position: 'relative',
+			}}
+		>
+			<TitleFrame eyebrow={eyebrow} title={title} />
+
+			<div
 				style={{
-					fontFamily: FONT_FAMILY,
-					padding: `${SPACING.xl}px ${SPACING.gutter}px`,
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'center',
 					position: 'relative',
+					display: 'flex',
+					gap: SPACING.lg,
+					justifyContent: 'space-between',
+					alignItems: 'stretch',
+					marginTop: SPACING.xl,
+					padding: `0 ${SPACING.md}px`,
 				}}
 			>
-				<TitleFrame eyebrow={eyebrow} title={title} />
+				<div
+					style={{
+						position: 'absolute',
+						top: 104,
+						left: SPACING.gutter,
+						right: SPACING.gutter,
+						height: 3,
+						background: colors.line,
+						zIndex: 0,
+					}}
+				/>
 
 				<div
 					style={{
-						position: 'relative',
-						display: 'flex',
-						gap: SPACING.lg,
-						justifyContent: 'space-between',
-						alignItems: 'stretch',
-						marginTop: SPACING.xl,
-						padding: `0 ${SPACING.md}px`,
+						position: 'absolute',
+						top: 104,
+						left: SPACING.gutter,
+						width: `calc(${lineWidth}% - ${SPACING.gutter * 2}px)`,
+						height: 3,
+						background: `linear-gradient(90deg, ${colors.accent[0]}99, ${colors.accent[1]}ee, ${colors.accent[2] ?? colors.accent[0]}99)`,
+						boxShadow: `0 0 12px ${colors.accent[1]}aa`,
+						zIndex: 1,
 					}}
-				>
-					{/* Glowing Timeline Line */}
-					<div
-						style={{
-							position: 'absolute',
-							top: 104, // Aligns exactly behind the year bubbles
-							left: SPACING.gutter,
-							right: SPACING.gutter,
-							height: 3,
-							background: 'rgba(255, 255, 255, 0.08)',
-							zIndex: 0,
-						}}
-					/>
-					
-					{/* Animated Active Track Line */}
-					<div
-						style={{
-							position: 'absolute',
-							top: 104,
-							left: SPACING.gutter,
-							width: `calc(${lineWidth}% - ${SPACING.gutter * 2}px)`,
-							height: 3,
-							background: `linear-gradient(90deg, ${COLORS.accent[0]}99, ${COLORS.accent[1]}ee, ${COLORS.accent[2]}99)`,
-							boxShadow: `0 0 12px ${COLORS.accent[1]}aa`,
-							zIndex: 1,
-						}}
-					/>
+				/>
 
-					{events.map((event, i) => (
-						<TimelineCard
-							key={event.title}
-							event={event}
-							color={COLORS.accent[i % COLORS.accent.length]}
-							startFrame={startFrame + i * stagger}
-							index={i}
-						/>
-					))}
-				</div>
-			</AbsoluteFill>
-		</AnimatedBackground>
+				{events.map((event, i) => (
+					<TimelineCard
+						key={event.title}
+						event={event}
+						color={colors.accent[i % colors.accent.length]}
+						startFrame={startFrame + i * stagger}
+						index={i}
+					/>
+				))}
+			</div>
+		</AbsoluteFill>
 	);
 };

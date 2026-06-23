@@ -303,6 +303,75 @@ def test_shots_drive_assembly_unit_count(tmp_path: Path) -> None:
     ), "\n".join(report.errors)
 
 
+_SCENE_TYPES_FIXTURE = {
+    "scenes": [
+        {"type": "intro_scene", "template": "@IntroScene", "description": "d",
+         "required": ["title"], "optional": ["subtitle"]},
+        {"type": "table_scene", "template": "@TableScene", "description": "d",
+         "required": ["title", "headers", "rows"], "optional": ["eyebrow"]},
+    ]
+}
+
+
+def _props_setup(tmp_path: Path, cuts: list[dict]) -> tuple[Path, Path]:
+    scene_types = tmp_path / "scene-types.json"
+    scene_types.write_text(json.dumps(_SCENE_TYPES_FIXTURE), encoding="utf-8")
+    props_dir = tmp_path / "demo-props"
+    props_dir.mkdir()
+    (props_dir / "ep.json").write_text(
+        json.dumps({"cuts": cuts}), encoding="utf-8"
+    )
+    return props_dir, scene_types
+
+
+def test_remotion_props_unknown_type_errors(tmp_path: Path) -> None:
+    props_dir, scene_types = _props_setup(
+        tmp_path, [{"id": "c1", "type": "comparsion", "leftLabel": "x"}]
+    )
+    report = P.Report()
+    P.lint_remotion_props(report, props_dir, scene_types)
+    assert any("not registered" in e and "comparsion" in e for e in report.errors)
+
+
+def test_remotion_props_missing_required_field_errors(tmp_path: Path) -> None:
+    props_dir, scene_types = _props_setup(
+        tmp_path, [{"id": "c1", "type": "table_scene", "title": "t", "headers": ["a"]}]
+    )
+    report = P.Report()
+    P.lint_remotion_props(report, props_dir, scene_types)
+    assert any("missing required" in e and "rows" in e for e in report.errors)
+
+
+def test_remotion_props_builtin_and_template_types_are_clean(tmp_path: Path) -> None:
+    props_dir, scene_types = _props_setup(
+        tmp_path,
+        [
+            {"id": "c1", "type": "intro_scene", "title": "t"},
+            {"id": "c2", "type": "comparison", "leftLabel": "l"},  # builtin alias
+            {"id": "c3", "source": "clip.mp4"},  # raw media cut, no type
+        ],
+    )
+    report = P.Report()
+    P.lint_remotion_props(report, props_dir, scene_types)
+    assert report.errors == [], "\n".join(report.errors)
+
+
+def test_remotion_props_typeless_and_sourceless_errors(tmp_path: Path) -> None:
+    props_dir, scene_types = _props_setup(tmp_path, [{"id": "c1"}])
+    report = P.Report()
+    P.lint_remotion_props(report, props_dir, scene_types)
+    assert any("no type and no source" in e for e in report.errors)
+
+
+def test_real_ep02_props_are_registered() -> None:
+    """The generated ep02 props must only use registered cut types."""
+    if not P.SCENE_TYPES_JSON.exists() or not P.DEMO_PROPS_DIR.exists():
+        pytest.skip("composer props not present")
+    report = P.Report()
+    P.lint_remotion_props(report)
+    assert report.errors == [], "\n".join(report.errors)
+
+
 def test_real_ep02_has_no_errors() -> None:
     """The production chain for ep02 must lint clean after the guardrail fixes."""
     ep = REPO_ROOT / "content-library" / "ep02-video-render"

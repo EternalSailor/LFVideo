@@ -1,6 +1,6 @@
 import React from 'react';
 import {OffthreadVideo, useCurrentFrame, spring, useVideoConfig, interpolate} from 'remotion';
-import {RADIUS, COLORS} from '../theme/tokens';
+import {useTheme} from '../theme/ThemeContext';
 
 type Corner =
 	| 'bottom-right'
@@ -58,6 +58,7 @@ export const VideoSlot: React.FC<Props> = ({
 }) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
+	const {colors, RADIUS} = useTheme();
 	const progress = spring({
 		fps,
 		frame: frame - startFrame,
@@ -79,7 +80,7 @@ export const VideoSlot: React.FC<Props> = ({
 				opacity,
 				borderRadius: isFill ? 0 : rounded ? RADIUS.lg : 0,
 				overflow: 'hidden',
-				border: isFill ? 'none' : `3px solid ${COLORS.accent[0]}55`,
+				border: isFill ? 'none' : `3px solid ${colors.accent[0]}55`,
 				boxShadow: isFill ? 'none' : '0 12px 40px rgba(0,0,0,0.4)',
 			}}
 		>

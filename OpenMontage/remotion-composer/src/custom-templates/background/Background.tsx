@@ -1,0 +1,236 @@
+import React from 'react';
+import {
+	AbsoluteFill,
+	Img,
+	OffthreadVideo,
+	interpolate,
+	useCurrentFrame,
+	useVideoConfig,
+} from 'remotion';
+import {useTheme} from '../theme/ThemeContext';
+import type {Palette} from '../theme/palettes';
+
+// 单一独立背景层。模板场景一律全透明，背景全部由这里统一渲染：
+//   gradient / grid / particles —— 主题色驱动的程序化背景
+//   image / video              —— 每镜的图片或视频底（带可调暗化遮罩）
+//   transparent                —— 不画任何底（让下层数字人/房间透出）
+export type BackgroundVariant = 'gradient' | 'grid' | 'particles' | 'transparent';
+
+export interface BackgroundProps {
+	variant?: BackgroundVariant;
+	/** 已解析为可用 URL 的图片地址。优先级高于 variant。 */
+	image?: string;
+	/** 已解析为可用 URL 的视频地址。优先级最高。 */
+	video?: string;
+	videoStartFrom?: number;
+	/** 图片/视频上的暗化遮罩透明度（0-1）。 */
+	overlayOpacity?: number;
+}
+
+const MeshGradientBg: React.FC<{colors: Palette}> = ({colors}) => {
+	const frame = useCurrentFrame();
+	const x1 = Math.sin(frame * 0.004) * 150 + 200;
+	const y1 = Math.cos(frame * 0.005) * 150 + 300;
+	const x2 = Math.cos(frame * 0.003) * 150 + 1500;
+	const y2 = Math.sin(frame * 0.004) * 150 + 800;
+	const x3 = Math.sin(frame * 0.003) * 200 + 960;
+	const y3 = Math.cos(frame * 0.006) * 150 + 540;
+
+	return (
+		<AbsoluteFill
+			style={{
+				background: `linear-gradient(135deg, ${colors.bg.from} 0%, ${colors.bg.to} 100%)`,
+				overflow: 'hidden',
+			}}
+		>
+			<style>{`
+				@keyframes bg-drift-slow {
+					0% { transform: scale(1) translate(0px, 0px) rotate(0deg); }
+					50% { transform: scale(1.1) translate(40px, -60px) rotate(180deg); }
+					100% { transform: scale(1) translate(0px, 0px) rotate(360deg); }
+				}
+			`}</style>
+			<div style={blob(x1, y1, 800, `${colors.accent[0]}22`, 100, 25, false)} />
+			<div style={blob(x2, y2, 800, `${colors.accent[1]}18`, 120, 30, true)} />
+			<div style={blob(x3, y3, 1000, `${colors.accent[2] ?? colors.accent[0]}12`, 140, 35, false)} />
+		</AbsoluteFill>
+	);
+};
+
+function blob(
+	cx: number,
+	cy: number,
+	size: number,
+	color: string,
+	blur: number,
+	dur: number,
+	reverse: boolean
+): React.CSSProperties {
+	return {
+		position: 'absolute',
+		left: cx - size / 2,
+		top: cy - size / 2,
+		width: size,
+		height: size,
+		borderRadius: '50%',
+		background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+		filter: `blur(${blur}px)`,
+		animation: `bg-drift-slow ${dur}s infinite ease-in-out${reverse ? ' reverse' : ''}`,
+	};
+}
+
+const GridBg: React.FC<{colors: Palette}> = ({colors}) => {
+	const frame = useCurrentFrame();
+	const gridOffset = (frame * 0.4) % 60;
+	const sweepX = interpolate(frame % 300, [0, 300], [-300, 2220]);
+	const {r, g, b} = hexToRgb(colors.accent[0]);
+
+	return (
+		<AbsoluteFill>
+			<MeshGradientBg colors={colors} />
+			<AbsoluteFill
+				style={{
+					backgroundImage: `linear-gradient(${colors.line} 1px, transparent 1px), linear-gradient(90deg, ${colors.line} 1px, transparent 1px)`,
+					backgroundSize: '60px 60px',
+					backgroundPosition: `${gridOffset}px ${gridOffset}px`,
+					opacity: 0.8,
+				}}
+			/>
+			<div
+				style={{
+					position: 'absolute',
+					left: sweepX,
+					top: 0,
+					width: '150px',
+					height: '100%',
+					background: `linear-gradient(90deg, transparent, rgba(${r}, ${g}, ${b}, 0.08), transparent)`,
+					pointerEvents: 'none',
+				}}
+			/>
+		</AbsoluteFill>
+	);
+};
+
+const PARTICLE_DEFS = Array.from({length: 32}, (_, i) => ({
+	x: (i * 137.5) % 100,
+	y: (i * 73.3) % 100,
+	size: 4 + (i % 3) * 2,
+	speed: 0.2 + (i % 4) * 0.1,
+	driftRadius: 5 + (i % 5) * 2,
+	driftSpeed: 0.01 + (i % 3) * 0.005,
+	accentIndex: i,
+}));
+
+const ParticlesBg: React.FC<{colors: Palette}> = ({colors}) => {
+	const frame = useCurrentFrame();
+	return (
+		<AbsoluteFill
+			style={{
+				background: `linear-gradient(135deg, ${colors.bg.from} 0%, ${colors.bg.to} 100%)`,
+				overflow: 'hidden',
+			}}
+		>
+			{PARTICLE_DEFS.map((p, i) => {
+				const time = frame * p.driftSpeed;
+				const curX = p.x + Math.sin(time) * p.driftRadius * 0.15;
+				const curY = (p.y - frame * p.speed * 0.03 + 100) % 100;
+				const color = colors.accent[p.accentIndex % colors.accent.length];
+				return (
+					<div
+						key={i}
+						style={{
+							position: 'absolute',
+							left: `${curX}%`,
+							top: `${curY}%`,
+							width: p.size,
+							height: p.size,
+							borderRadius: '50%',
+							backgroundColor: color,
+							opacity: 0.5,
+							boxShadow: `0 0 ${p.size * 3}px ${color}, 0 0 ${p.size * 6}px ${color}aa`,
+							transform: 'translate(-50%, -50%)',
+						}}
+					/>
+				);
+			})}
+		</AbsoluteFill>
+	);
+};
+
+const MediaBg: React.FC<{
+	image?: string;
+	video?: string;
+	videoStartFrom?: number;
+	overlayOpacity: number;
+}> = ({image, video, videoStartFrom = 0, overlayOpacity}) => {
+	const {fps, durationInFrames} = useVideoConfig();
+	const frame = useCurrentFrame();
+	const progress = interpolate(frame, [0, durationInFrames], [0, 1], {
+		extrapolateLeft: 'clamp',
+		extrapolateRight: 'clamp',
+	});
+	const scale = 1 + progress * 0.08;
+
+	return (
+		<AbsoluteFill style={{overflow: 'hidden'}}>
+			{video ? (
+				<OffthreadVideo
+					src={video}
+					startFrom={Math.round(videoStartFrom * fps)}
+					style={{width: '100%', height: '100%', objectFit: 'cover'}}
+					muted
+				/>
+			) : image ? (
+				<Img
+					src={image}
+					style={{
+						width: '100%',
+						height: '100%',
+						objectFit: 'cover',
+						transform: `scale(${scale})`,
+						willChange: 'transform',
+					}}
+				/>
+			) : null}
+			<AbsoluteFill style={{background: `rgba(8, 6, 12, ${overlayOpacity})`}} />
+		</AbsoluteFill>
+	);
+};
+
+export const Background: React.FC<BackgroundProps> = ({
+	variant = 'gradient',
+	image,
+	video,
+	videoStartFrom,
+	overlayOpacity = 0.55,
+}) => {
+	const {colors} = useTheme();
+
+	if (video || image) {
+		return (
+			<MediaBg
+				image={image}
+				video={video}
+				videoStartFrom={videoStartFrom}
+				overlayOpacity={overlayOpacity}
+			/>
+		);
+	}
+	if (variant === 'transparent') {
+		return null;
+	}
+	if (variant === 'grid') {
+		return <GridBg colors={colors} />;
+	}
+	if (variant === 'particles') {
+		return <ParticlesBg colors={colors} />;
+	}
+	return <MeshGradientBg colors={colors} />;
+};
+
+function hexToRgb(hex: string): {r: number; g: number; b: number} {
+	const clean = hex.replace('#', '');
+	const full = clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean;
+	const bigint = parseInt(full, 16);
+	return {r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255};
+}

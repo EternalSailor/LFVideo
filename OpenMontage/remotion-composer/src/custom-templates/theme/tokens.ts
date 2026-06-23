@@ -13,20 +13,11 @@ export const FONT_SIZE = {
 } as const;
 
 // ---- 颜色 ----
-export const COLORS = {
-	bg: {
-		from: '#1A1320',
-		to: '#2E2233',
-	},
-	text: {
-		primary: '#F3E9DA',
-		secondary: '#C9B5A0',
-		muted: '#9C8A78',
-	},
-	accent: ['#FFB347', '#FF7EB6', '#7FD8C0', '#C9A6E8'] as const,
-	line: 'rgba(255,232,205,0.10)',
-	surface: 'rgba(255,232,205,0.05)',
-} as const;
+// 颜色已迁移到 ./palettes.ts（按主题名索引）。这里仅保留 warm-glass 作为
+// 默认调色板的兼容导出；组件应改用 useTheme().colors 读取当前主题颜色。
+import {PALETTES} from './palettes';
+
+export const COLORS = PALETTES['warm-glass'];
 
 // ---- 间距 ----
 export const SPACING = {
