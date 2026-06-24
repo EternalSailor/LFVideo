@@ -8,6 +8,7 @@ import {
 	useVideoConfig,
 } from 'remotion';
 import type {Palette} from '../theme/palettes';
+import {Beams, Threads, RetroGrid, Scanlines} from './holographicEffects';
 
 // 背景层的独立配色（全息蓝）。背景已是独立图层，颜色不再跟随场景主题，
 // 而由这里统一驱动，便于后续叠加前端背景特效塑造「全息投影」观感。
@@ -22,10 +23,16 @@ const HOLOGRAPHIC: Palette = {
 };
 
 // 单一独立背景层。模板场景一律全透明，背景全部由这里统一渲染：
-//   gradient / grid / particles —— 主题色驱动的程序化背景
+//   gradient / grid / particles —— 主题色驱动的程序化背景（叠全息光束 + 扫描线）
+//   holo                        —— 全息满配：网格地板 + 光束 + 丝线 + 扫描线
 //   image / video              —— 每镜的图片或视频底（带可调暗化遮罩）
 //   transparent                —— 不画任何底（让下层数字人/房间透出）
-export type BackgroundVariant = 'gradient' | 'grid' | 'particles' | 'transparent';
+export type BackgroundVariant =
+	| 'gradient'
+	| 'grid'
+	| 'particles'
+	| 'holo'
+	| 'transparent';
 
 export interface BackgroundProps {
 	variant?: BackgroundVariant;
@@ -113,6 +120,7 @@ const GridBg: React.FC<{colors: Palette}> = ({colors}) => {
 					opacity: 0.8,
 				}}
 			/>
+			<RetroGrid colors={colors} />
 			<div
 				style={{
 					position: 'absolute',
@@ -124,9 +132,21 @@ const GridBg: React.FC<{colors: Palette}> = ({colors}) => {
 					pointerEvents: 'none',
 				}}
 			/>
+			<Scanlines colors={colors} />
 		</AbsoluteFill>
 	);
 };
+
+// 全息满配：网格地板 + 斜向光束 + 流动丝线 + 扫描线，叠在 mesh 渐变上。
+const HoloBg: React.FC<{colors: Palette}> = ({colors}) => (
+	<AbsoluteFill style={{overflow: 'hidden'}}>
+		<MeshGradientBg colors={colors} />
+		<RetroGrid colors={colors} />
+		<Beams colors={colors} />
+		<Threads colors={colors} />
+		<Scanlines colors={colors} />
+	</AbsoluteFill>
+);
 
 const PARTICLE_DEFS = Array.from({length: 32}, (_, i) => ({
 	x: (i * 137.5) % 100,
@@ -240,9 +260,24 @@ export const Background: React.FC<BackgroundProps> = ({
 		return <GridBg colors={colors} />;
 	}
 	if (variant === 'particles') {
-		return <ParticlesBg colors={colors} />;
+		return (
+			<AbsoluteFill style={{overflow: 'hidden'}}>
+				<ParticlesBg colors={colors} />
+				<Scanlines colors={colors} />
+			</AbsoluteFill>
+		);
 	}
-	return <MeshGradientBg colors={colors} />;
+	if (variant === 'holo') {
+		return <HoloBg colors={colors} />;
+	}
+	// 默认 gradient：mesh 渐变 + 斜向光束 + 扫描线，得到统一的全息底。
+	return (
+		<AbsoluteFill style={{overflow: 'hidden'}}>
+			<MeshGradientBg colors={colors} />
+			<Beams colors={colors} />
+			<Scanlines colors={colors} />
+		</AbsoluteFill>
+	);
 };
 
 function hexToRgb(hex: string): {r: number; g: number; b: number} {

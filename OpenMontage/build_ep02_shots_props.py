@@ -106,7 +106,7 @@ _AVATAR_ROWS = [
 # table:title+headers+rows, terminal:steps, outro:headline, comparison:
 # left/right Label/Value).
 SHOT_CONTENT: dict[str, dict[str, Any]] = {
-    "1.1": {"title": "用 Vibe Coding 搭一套自动出片的渲染引擎", "subtitle": "把视频写成代码，让 AI 按配置自动出片", "background": "particles"},
+    "1.1": {"title": "用 Vibe Coding 搭一套自动出片的渲染引擎", "subtitle": "把视频写成代码，让 AI 按配置自动出片", "background": "holo"},
     "1.2": {"title": "AI 强在啃文本和代码 → 渲染就该数据驱动", "subtitle": "没前后端基础，全程用大白话指挥 AI", "background": "grid"},
     "1.3": {"title": "三步：找路径 · 选型 · 落地", "subtitle": "让 AI 找路 → 对约束选型 → 落地出片", "background": "gradient"},
 
