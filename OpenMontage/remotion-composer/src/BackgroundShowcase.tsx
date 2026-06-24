@@ -61,6 +61,13 @@ const DEMOS: Demo[] = [
 		render: () => <Background variant="holo" />,
 	},
 	{
+		id: 'video',
+		kind: 'variant',
+		note: '随机轮播背景视频（灰度→透明 + 交叉淡入淡出）· 视频放 public/video-background/',
+		usage: '<Background variant="video" />',
+		render: () => <Background variant="video" />,
+	},
+	{
 		id: 'Beams',
 		kind: 'effect',
 		note: '斜向光束：缓慢飘移与明灭',

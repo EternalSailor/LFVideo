@@ -9,6 +9,7 @@ import {
 } from 'remotion';
 import type {Palette} from '../theme/palettes';
 import {Beams, Threads, RetroGrid, Scanlines} from './holographicEffects';
+import {VideoCarousel} from './VideoCarousel';
 
 // 背景层的独立配色（全息蓝）。背景已是独立图层，颜色不再跟随场景主题，
 // 而由这里统一驱动，便于后续叠加前端背景特效塑造「全息投影」观感。
@@ -25,13 +26,15 @@ export const HOLOGRAPHIC: Palette = {
 // 单一独立背景层。模板场景一律全透明，背景全部由这里统一渲染：
 //   gradient / grid / particles —— 主题色驱动的程序化背景（叠全息光束 + 扫描线）
 //   holo                        —— 全息满配：网格地板 + 光束 + 丝线 + 扫描线
-//   image / video              —— 每镜的图片或视频底（带可调暗化遮罩）
+//   video                       —— 随机轮播背景视频（灰度→透明 + 交叉淡入淡出），叠在全息底上
 //   transparent                —— 不画任何底（让下层数字人/房间透出）
+// 另：image/video props（单张图/单个视频底，带可调暗化遮罩）优先级高于 variant。
 export type BackgroundVariant =
 	| 'gradient'
 	| 'grid'
 	| 'particles'
 	| 'holo'
+	| 'video'
 	| 'transparent';
 
 export interface BackgroundProps {
@@ -144,6 +147,16 @@ const HoloBg: React.FC<{colors: Palette}> = ({colors}) => (
 		<RetroGrid colors={colors} />
 		<Beams colors={colors} />
 		<Threads colors={colors} />
+		<Scanlines colors={colors} />
+	</AbsoluteFill>
+);
+
+// 视频底：全息 mesh 渐变打底，叠上随机轮播的背景视频（灰度→透明），
+// 再压一层扫描线统一观感。视频清单为空时退化成纯全息底。
+const VideoBg: React.FC<{colors: Palette}> = ({colors}) => (
+	<AbsoluteFill style={{overflow: 'hidden'}}>
+		<MeshGradientBg colors={colors} />
+		<VideoCarousel />
 		<Scanlines colors={colors} />
 	</AbsoluteFill>
 );
@@ -269,6 +282,9 @@ export const Background: React.FC<BackgroundProps> = ({
 	}
 	if (variant === 'holo') {
 		return <HoloBg colors={colors} />;
+	}
+	if (variant === 'video') {
+		return <VideoBg colors={colors} />;
 	}
 	// 默认 gradient：mesh 渐变 + 斜向光束 + 扫描线，得到统一的全息底。
 	return (
