@@ -24,12 +24,12 @@ const rgba = (hex: string, a: number): string => {
 // 推进的运动；顶部叠一条地平辉光。
 export const RetroGrid: React.FC<{colors: Palette; speed?: number}> = ({
 	colors,
-	speed = 0.6,
+	speed = 0.8,
 }) => {
 	const frame = useCurrentFrame();
 	const cell = 80;
 	const scroll = (frame * speed) % cell;
-	const line = rgba(colors.accent[0], 0.5);
+	const line = rgba(colors.accent[0], 0.7);
 
 	const plane = (originY: string): React.CSSProperties => ({
 		position: 'absolute',
@@ -39,9 +39,10 @@ export const RetroGrid: React.FC<{colors: Palette; speed?: number}> = ({
 		height: '140%',
 		transform: 'rotateX(72deg)',
 		transformOrigin: originY,
-		backgroundImage: `linear-gradient(${line} 1px, transparent 1px), linear-gradient(90deg, ${line} 1px, transparent 1px)`,
+		backgroundImage: `linear-gradient(${line} 2px, transparent 2px), linear-gradient(90deg, ${line} 2px, transparent 2px)`,
 		backgroundSize: `${cell}px ${cell}px`,
 		backgroundPositionY: `${scroll}px`,
+		filter: `drop-shadow(0 0 4px ${rgba(colors.accent[0], 0.5)})`,
 		maskImage: 'linear-gradient(to top, #000 0%, rgba(0,0,0,0.15) 55%, transparent 80%)',
 		WebkitMaskImage: 'linear-gradient(to top, #000 0%, rgba(0,0,0,0.15) 55%, transparent 80%)',
 	});
@@ -55,9 +56,9 @@ export const RetroGrid: React.FC<{colors: Palette; speed?: number}> = ({
 					left: 0,
 					right: 0,
 					top: '46%',
-					height: 2,
-					background: rgba(colors.accent[1], 0.55),
-					boxShadow: `0 0 60px 14px ${rgba(colors.accent[1], 0.35)}`,
+					height: 3,
+					background: rgba(colors.accent[1], 0.8),
+					boxShadow: `0 0 80px 20px ${rgba(colors.accent[1], 0.5)}`,
 				}}
 			/>
 			<div style={{...plane('center bottom'), top: '46%'}} />
@@ -68,7 +69,7 @@ export const RetroGrid: React.FC<{colors: Palette; speed?: number}> = ({
 // 斜向光束（react-bits Beams）——若干细长渐变条，缓慢飘移与明灭。
 export const Beams: React.FC<{colors: Palette; count?: number}> = ({
 	colors,
-	count = 5,
+	count = 6,
 }) => {
 	const frame = useCurrentFrame();
 	const {fps, width} = useVideoConfig();
@@ -78,7 +79,7 @@ export const Beams: React.FC<{colors: Palette; count?: number}> = ({
 				const color = colors.accent[i % colors.accent.length];
 				const baseX = (width / (count + 1)) * (i + 1);
 				const sway = Math.sin((frame / fps) * 0.5 + i) * 60;
-				const glow = 0.18 + 0.16 * osc01(frame, fps, 6 + i, i * 0.7);
+				const glow = 0.28 + 0.22 * osc01(frame, fps, 6 + i, i * 0.7);
 				return (
 					<div
 						key={i}
@@ -86,10 +87,10 @@ export const Beams: React.FC<{colors: Palette; count?: number}> = ({
 							position: 'absolute',
 							top: '-30%',
 							left: baseX + sway,
-							width: 130,
+							width: 150,
 							height: '160%',
 							background: `linear-gradient(180deg, transparent 0%, ${rgba(color, glow)} 45%, transparent 100%)`,
-							filter: 'blur(30px)',
+							filter: 'blur(26px)',
 							transform: `rotate(${18 + (i % 2) * 4}deg)`,
 						}}
 					/>
@@ -102,7 +103,7 @@ export const Beams: React.FC<{colors: Palette; count?: number}> = ({
 // 流动丝线（react-bits Threads）——若干水平正弦曲线，相位随帧推进。
 export const Threads: React.FC<{colors: Palette; count?: number}> = ({
 	colors,
-	count = 4,
+	count = 5,
 }) => {
 	const frame = useCurrentFrame();
 	const {fps, width, height} = useVideoConfig();
@@ -114,7 +115,7 @@ export const Threads: React.FC<{colors: Palette; count?: number}> = ({
 				width={width}
 				height={height}
 				viewBox={`0 0 ${width} ${height}`}
-				style={{position: 'absolute', inset: 0}}
+				style={{position: 'absolute', inset: 0, filter: `drop-shadow(0 0 6px ${rgba(colors.accent[0], 0.45)})`}}
 			>
 				{Array.from({length: count}, (_, i) => {
 					const color = colors.accent[i % colors.accent.length];
@@ -132,8 +133,8 @@ export const Threads: React.FC<{colors: Palette; count?: number}> = ({
 							key={i}
 							points={pts.join(' ')}
 							fill="none"
-							stroke={rgba(color, 0.34)}
-							strokeWidth={1.6}
+							stroke={rgba(color, 0.5)}
+							strokeWidth={2}
 						/>
 					);
 				})}
@@ -151,7 +152,7 @@ export const Scanlines: React.FC<{colors: Palette}> = ({colors}) => {
 		<AbsoluteFill style={{pointerEvents: 'none', mixBlendMode: 'screen'}}>
 			<AbsoluteFill
 				style={{
-					backgroundImage: `repeating-linear-gradient(0deg, ${rgba(colors.accent[0], 0.07)} 0px, ${rgba(colors.accent[0], 0.07)} 1px, transparent 1px, transparent 3px)`,
+					backgroundImage: `repeating-linear-gradient(0deg, ${rgba(colors.accent[0], 0.1)} 0px, ${rgba(colors.accent[0], 0.1)} 1px, transparent 1px, transparent 3px)`,
 				}}
 			/>
 			<div
@@ -160,8 +161,8 @@ export const Scanlines: React.FC<{colors: Palette}> = ({colors}) => {
 					left: 0,
 					right: 0,
 					top: sweepY,
-					height: 120,
-					background: `linear-gradient(180deg, transparent, ${rgba(colors.accent[1], 0.14)}, transparent)`,
+					height: 140,
+					background: `linear-gradient(180deg, transparent, ${rgba(colors.accent[1], 0.22)}, transparent)`,
 				}}
 			/>
 		</AbsoluteFill>
