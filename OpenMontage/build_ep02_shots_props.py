@@ -9,12 +9,12 @@ shot covers) comes straight from the SSOT JSON contract; only the on-screen
 renderable detail of each shot (the motion-engineer's authoring) lives here in
 ``SHOT_CONTENT``.
 
-Scene-template -> Explainer ``cut.type`` mapping (the engine has no
-``@SplitLayout`` cut, so split/compare shots render as ``comparison``):
+Scene-template -> Explainer ``cut.type`` mapping. Every type is a first-class
+template-library scene (see remotion-composer/src/custom-templates/registry.ts):
 
     @IntroScene    -> intro_scene     @ConceptScene  -> concept_scene
-    @TableScene    -> table_scene     @TerminalScene -> terminal_scene
-    @OutroScene    -> outro_scene     @SplitLayout   -> comparison
+    @TableScene    -> table_scene     @TerminalScene -> code_scene
+    @OutroScene    -> outro_scene     @SplitLayout   -> comparison_scene
 
 Cut timing is driven by each shot's ``duration_seconds`` (06-tts narration is
 not yet produced for this cut; once it is, swap in real segment durations from
@@ -75,9 +75,9 @@ TEMPLATE_TO_TYPE = {
     "@IntroScene": "intro_scene",
     "@ConceptScene": "concept_scene",
     "@TableScene": "table_scene",
-    "@TerminalScene": "terminal_scene",
+    "@TerminalScene": "code_scene",
     "@OutroScene": "outro_scene",
-    "@SplitLayout": "comparison",
+    "@SplitLayout": "comparison_scene",
 }
 
 
@@ -85,20 +85,20 @@ def _term(code: str) -> list[dict[str, str]]:
     return [{"kind": "out", "text": line} for line in code.split("\n")]
 
 
-# 04 table rows render through TableScene's fixed 3-column shape
-# (feature / cursor / windsurf + win). The S3 route matrix collapses the 04
-# section's 4 columns into "适用场景 / 已知坑".
+# 04 table rows -> TableScene 的通用 cells[]：每行与 headers 一一对齐
+# (方案 / 适用场景 / 已知坑)。高亮交给 cut.highlightCell（"行-列"）显式标注，
+# 不再依赖上一期遗留的领域字段。
 _ROUTE_ROWS = [
-    {"feature": "Remotion", "cursor": "前端栈、复杂排版、跨期复用", "windsurf": "顶层读 window 崩；BUSL 授权", "win": "neutral"},
-    {"feature": "Motion Canvas", "cursor": "代码演示、精确时序", "windsurf": "生态小、模板自建", "win": "neutral"},
-    {"feature": "Manim", "cursor": "数学/公式可视化", "windsurf": "排版弱、渲染慢", "win": "neutral"},
-    {"feature": "MoviePy", "cursor": "简单拼接、音轨闪避", "windsurf": "自适应排版繁琐、吃内存", "win": "neutral"},
-    {"feature": "FFmpeg", "cursor": "批量转码、字幕烧录", "windsurf": "命令晦涩难调试", "win": "neutral"},
+    ["Remotion", "前端栈、复杂排版、跨期复用", "顶层读 window 崩；BUSL 授权"],
+    ["Motion Canvas", "代码演示、精确时序", "生态小、模板自建"],
+    ["Manim", "数学/公式可视化", "排版弱、渲染慢"],
+    ["MoviePy", "简单拼接、音轨闪避", "自适应排版繁琐、吃内存"],
+    ["FFmpeg", "批量转码、字幕烧录", "命令晦涩难调试"],
 ]
 _AVATAR_ROWS = [
-    {"feature": "真人出镜", "cursor": "最可信、有温度", "windsurf": "要露脸、不可编程复用、隐私成本", "win": "neutral"},
-    {"feature": "写实/对口型数字人", "cursor": "像真主播", "windsurf": "易掉恐怖谷、可信度反崩；口型重活", "win": "neutral"},
-    {"feature": "3D 风格化 VRM", "cursor": "风格统一、可编程、渲一次到处用", "windsurf": "要建模与动作绑定，可交给 AI", "win": "cursor"},
+    ["真人出镜", "最可信、有温度", "要露脸、不可编程复用、隐私成本"],
+    ["写实/对口型数字人", "像真主播", "易掉恐怖谷、可信度反崩；口型重活"],
+    ["3D 风格化 VRM", "风格统一、可编程、渲一次到处用", "要建模与动作绑定，可交给 AI"],
 ]
 
 # Renderable on-screen content per shot id. Type-specific fields satisfy the
@@ -106,25 +106,25 @@ _AVATAR_ROWS = [
 # table:title+headers+rows, terminal:steps, outro:headline, comparison:
 # left/right Label/Value).
 SHOT_CONTENT: dict[str, dict[str, Any]] = {
-    "1.1": {"title": "用 Vibe Coding 搭一套自动出片的渲染引擎", "subtitle": "把视频写成代码，让 AI 按配置自动出片", "background": "particles"},
-    "1.2": {"title": "AI 强在啃文本和代码 → 渲染就该数据驱动", "subtitle": "没前后端基础，全程用大白话指挥 AI", "background": "grid"},
-    "1.3": {"title": "三步：找路径 · 选型 · 落地", "subtitle": "让 AI 找路 → 对约束选型 → 落地出片", "background": "gradient"},
+    "1.1": {"title": "用 Vibe Coding 搭一套自动出片的渲染引擎", "subtitle": "把视频写成代码，让 AI 按配置自动出片", "background": "holo"},
+    "1.2": {"title": "AI 强在啃文本和代码 → 渲染就该数据驱动", "subtitle": "没前后端基础，全程用大白话指挥 AI", "background": "holo"},
+    "1.3": {"title": "三步：找路径 · 选型 · 落地", "subtitle": "让 AI 找路 → 对约束选型 → 落地出片", "background": "holo"},
 
-    "2.1": {"eyebrow": "找技术路径", "title": "把选择题丢给 AI：有哪些现成路子？", "background": "gradient", "items": [
+    "2.1": {"eyebrow": "找技术路径", "title": "把选择题丢给 AI：有哪些现成路子？", "background": "holo", "items": [
         {"label": "NOT", "title": "不埋头啃文档", "desc": "不自己从零调研，直接把选择题交给 AI", "icon": "🙅"},
         {"label": "ASK", "title": "一句话需求", "desc": "想把视频写成代码自动出片，有哪些现成路子？", "icon": "💬"},
     ]},
-    "2.2": {"eyebrow": "六条路线", "title": "AI 一口气摆了六条", "background": "gradient", "items": [
+    "2.2": {"eyebrow": "六条路线", "title": "AI 一口气摆了六条", "background": "holo", "items": [
         {"label": "WEB", "title": "Remotion", "desc": "网页那套：React + CSS 渲染", "icon": "🌐"},
         {"label": "MATH", "title": "Manim", "desc": "画数学公式 / 几何", "icon": "📐"},
         {"label": "MORE", "title": "MoviePy · FFmpeg · Motion Canvas · PixiJS", "desc": "拼接转码 + 时序/粒子动画，补全六条", "icon": "➕"},
     ]},
-    "2.3": {"eyebrow": "同一个内核", "title": "代码描述画面 → 编译成帧 → 合成视频", "background": "gradient", "items": [
+    "2.3": {"eyebrow": "同一个内核", "title": "代码描述画面 → 编译成帧 → 合成视频", "background": "holo", "items": [
         {"label": "DESC", "title": "代码描述画面", "desc": "拿代码/数据把画面声明出来", "icon": "📄"},
         {"label": "COMPILE", "title": "编译成一帧帧", "desc": "渲染器算出每个时刻的画面", "icon": "⚙️"},
         {"label": "COMPOSE", "title": "合成视频", "desc": "帧序列合成成片", "icon": "🎬"},
     ]},
-    "2.4": {"eyebrow": "本步小结", "title": "这一步只摆路，先不评好坏", "background": "gradient", "items": [
+    "2.4": {"eyebrow": "本步小结", "title": "这一步只摆路，先不评好坏", "background": "holo", "items": [
         {"label": "LIST", "title": "只罗列", "desc": "先把候选方案摆全", "icon": "📋"},
         {"label": "LATER", "title": "不评判", "desc": "好坏留到下一步选型再说", "icon": "⏭️"},
     ]},
@@ -136,12 +136,12 @@ SHOT_CONTENT: dict[str, dict[str, Any]] = {
     "3.5": {"title": "Remotion ✅ vs 复制粘贴 HTML ❌", "leftLabel": "Remotion", "leftValue": "改一处全系列生效 · 只填数据 · 代价：React + BUSL 付费", "rightLabel": "复制粘贴 HTML", "rightValue": "每期复制越改越乱 · 结构易跑偏"},
     "3.6": {"title": "一句话", "leftLabel": "AI", "leftValue": "铺信息：把方案和坑摆全", "rightLabel": "你", "rightValue": "拍板：做减法、定取舍"},
 
-    "4.1": {"eyebrow": "引擎怎么干活", "title": "一份配置 → Explainer 按 type 分发 → 现成组件", "background": "gradient", "items": [
+    "4.1": {"eyebrow": "引擎怎么干活", "title": "一份配置 → Explainer 按 type 分发 → 现成组件", "background": "holo", "items": [
         {"label": "WRITE", "title": "你写配置", "desc": "说清这段画面长啥样", "icon": "📝"},
         {"label": "DISPATCH", "title": "Explainer 分发", "desc": "看 type 字段自动找组件", "icon": "🔀"},
         {"label": "RENDER", "title": "现成组件渲染", "desc": "comparison/terminal/charts… 照填就渲", "icon": "🧩"},
     ]},
-    "4.2": {"eyebrow": "remotion-composer", "title": "做内容 = 挑组件 + 填字段", "background": "gradient", "items": [
+    "4.2": {"eyebrow": "remotion-composer", "title": "做内容 = 挑组件 + 填字段", "background": "holo", "items": [
         {"label": "comparison", "title": "对比卡", "desc": "type=comparison 出对比卡", "icon": "🆚"},
         {"label": "terminal", "title": "合成终端", "desc": "不用真录屏", "icon": "🖥️"},
         {"label": "charts", "title": "图表 / 分屏", "desc": "按需挑用", "icon": "📊"},
@@ -165,7 +165,7 @@ SHOT_CONTENT: dict[str, dict[str, Any]] = {
         "// 漏填 / 写错字段 → tsc 当场报错，AI 跑不偏"
     )},
     "4.5": {"title": "让 AI 填空，别让它造轮子", "leftLabel": "❌ 从零手写", "leftValue": "让 AI 手写 ComparisonScene.tsx，易错难维护", "rightLabel": "✅ 只填数据", "rightValue": "复用现成 @ComparisonCard，TS 兜底"},
-    "4.6": {"eyebrow": "延伸", "title": "还能扩一套自有风格组件库", "background": "gradient", "items": [
+    "4.6": {"eyebrow": "延伸", "title": "还能扩一套自有风格组件库", "background": "holo", "items": [
         {"label": "BRAND", "title": "自有风格组件", "desc": "在现成组件上扩一套，辨识度更强", "icon": "🎨"},
         {"label": "LATER", "title": "以后单开一期", "desc": "那是更大的话题", "icon": "📅"},
     ]},
@@ -184,24 +184,24 @@ SHOT_CONTENT: dict[str, dict[str, Any]] = {
         "// .cursor/rules/remotion-ssr.mdc:\n"
         "// 组件顶层禁止直接读 window/document"
     )},
-    "5.3": {"eyebrow": "Vibe Coding 精髓", "title": "重复的规矩，固化成规则交给 AI", "background": "gradient", "items": [
+    "5.3": {"eyebrow": "Vibe Coding 精髓", "title": "重复的规矩，固化成规则交给 AI", "background": "holo", "items": [
         {"label": "RULE", "title": ".cursor/rules/remotion-ssr.mdc", "desc": "组件顶层禁止直接读 window/document", "icon": "🛡️"},
         {"label": "AUTO", "title": "AI 自动带上", "desc": "往后生成组件自动遵守，不用每次盯着", "icon": "🤖"},
     ]},
 
-    "6.1": {"eyebrow": "数字人选型", "title": "出镜形象只是陪衬串场，不是主角", "background": "gradient", "items": [
+    "6.1": {"eyebrow": "数字人选型", "title": "出镜形象只是陪衬串场，不是主角", "background": "holo", "items": [
         {"label": "METHOD", "title": "套选引擎的方法论", "desc": "先把定位说死，再摆选项和坑", "icon": "🧭"},
         {"label": "ROLE", "title": "陪衬定位", "desc": "串场，不抢内容主角", "icon": "🎭"},
     ]},
     "6.2": {"eyebrow": "三种形象方案", "title": "可选形象 + 各自的坑", "background": "grid", "headers": ["形象方案", "适用场景", "坑 / 代价"], "rows": _AVATAR_ROWS},
     "6.3": {"eyebrow": "回到约束", "title": "选定 3D 风格化 VRMAvatar", "background": "grid", "headers": ["形象方案", "适用场景", "坑 / 代价"], "rows": _AVATAR_ROWS, "highlightCell": "3-1"},
-    "6.4": {"eyebrow": "落地交给 AI", "title": "整体渲一次按场景裁，脚踩稳", "background": "gradient", "items": [
+    "6.4": {"eyebrow": "落地交给 AI", "title": "整体渲一次按场景裁，脚踩稳", "background": "holo", "items": [
         {"label": "CROP", "title": "按场景裁切", "desc": "整体渲一次，再裁半身/全身", "icon": "✂️"},
         {"label": "FIX", "title": "脚踩稳", "desc": "大腿反向抵消髋部摆动，修掉钟摆甩腿", "icon": "🦵"},
     ]},
 
-    "7.1": {"headline": "三步搭好你的自动出片引擎，没基础也能复制", "cta": "找路径 · 选型 · 落地", "background": "gradient"},
-    "7.2": {"headline": "下期 EP03：用 Whisper 让字幕踩着话音跳", "cta": "关注 · 别错过", "background": "gradient"},
+    "7.1": {"headline": "三步搭好你的自动出片引擎，没基础也能复制", "cta": "找路径 · 选型 · 落地", "background": "holo"},
+    "7.2": {"headline": "下期 EP03：用 Whisper 让字幕踩着话音跳", "cta": "关注 · 别错过", "background": "holo"},
 }
 
 
@@ -281,9 +281,12 @@ def main() -> int:
         "captions": captions,
         "avatar": AVATAR,
     }
-    unity_present = (PUBLIC_DIR / UNITY_BG_IMAGE).exists()
+    # Warp room is ep02's authored look. Keep it enabled regardless of whether
+    # the (uncommitted) artist asset happens to be on disk at generation time,
+    # so regenerating props never silently turns the warp off. Drop the room
+    # shot into public/UnityBG.png before rendering.
     payload["unityBackground"] = {
-        "enabled": unity_present,
+        "enabled": True,
         "image": UNITY_BG_IMAGE,
         "screenQuad": UNITY_BG_QUAD,
         # Translucent + blue-tinted UI backdrop (holographic look).

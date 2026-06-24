@@ -29,7 +29,6 @@ function resolveAsset(src: string): string {
 import { TextCard } from "./components/TextCard";
 import { StatCard } from "./components/StatCard";
 import { CalloutBox } from "./components/CalloutBox";
-import { ComparisonCard } from "./components/ComparisonCard";
 import { BarChart } from "./components/charts/BarChart";
 import { LineChart } from "./components/charts/LineChart";
 import { PieChart } from "./components/charts/PieChart";
@@ -37,7 +36,7 @@ import { KPIGrid } from "./components/charts/KPIGrid";
 import { ProgressBar } from "./components/ProgressBar";
 import { CaptionOverlay, WordCaption } from "./components/CaptionOverlay";
 import { VRMAvatar, AvatarTimelineEntry } from "./components/VRMAvatar";
-import { quadMatrix3d, UnityBackgroundConfig } from "./components/screenWarp";
+import { quadMatrix3d, animatedQuadMatrix3d, UnityBackgroundConfig } from "./components/screenWarp";
 import {
   AvatarOverride,
   AvatarSceneConfig,
@@ -48,8 +47,6 @@ import { StatReveal } from "./components/StatReveal";
 import { HeroTitle } from "./components/HeroTitle";
 import { AnimeScene } from "./components/AnimeScene";
 import type { CameraMotion } from "./components/AnimeScene";
-import { TerminalScene } from "./components/TerminalScene";
-import type { TerminalStep } from "./components/TerminalScene";
 import { ScreenshotScene } from "./components/ScreenshotScene";
 import type { ScreenshotStep } from "./components/ScreenshotScene";
 import { ProviderChip } from "./components/ProviderChip";
@@ -61,7 +58,14 @@ import {
   ConceptScene,
   TimelineScene,
   TableScene,
+  ComparisonScene,
+  CodeScene,
+  Background,
+  TemplateThemeProvider,
+  buildTemplateTheme,
+  PALETTES,
 } from "./custom-templates";
+import type { BackgroundVariant, CodeStep, TransitionId } from "./custom-templates";
 
 // Load Space Grotesk font for cinematic typography
 const { fontFamily } = loadFont("normal", {
@@ -70,7 +74,7 @@ const { fontFamily } = loadFont("normal", {
 });
 
 // ---------------------------------------------------------------------------
-// Animated Background — Gradient Mesh + Floating Orbs
+// Color helpers (used by the warped-screen tint path)
 // ---------------------------------------------------------------------------
 
 // Parse hex color to RGB components
@@ -88,122 +92,6 @@ function hexToRgba(hex: string, a: number): string {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-// Detect if a color is "light" (for choosing grid/overlay treatment)
-function isLightColor(hex: string): boolean {
-  const { r, g, b } = hexToRgb(hex);
-  return (r * 299 + g * 587 + b * 114) / 1000 > 128;
-}
-
-// Darken/lighten a color by mixing toward black or white
-function shiftColor(hex: string, amount: number): string {
-  const { r, g, b } = hexToRgb(hex);
-  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
-  if (amount < 0) {
-    // Darken
-    const f = 1 + amount;
-    return `rgb(${clamp(r * f)}, ${clamp(g * f)}, ${clamp(b * f)})`;
-  }
-  // Lighten
-  return `rgb(${clamp(r + (255 - r) * amount)}, ${clamp(g + (255 - g) * amount)}, ${clamp(b + (255 - b) * amount)})`;
-}
-
-const AnimatedBackground: React.FC<{ theme: ThemeConfig }> = ({ theme }) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
-
-  const bg = theme.backgroundColor;
-  const primary = theme.primaryColor;
-  const accent = theme.accentColor;
-  const surface = theme.surfaceColor;
-  const light = isLightColor(bg);
-
-  // Slow-moving gradient angles
-  const angle1 = 135 + Math.sin(frame / (fps * 8)) * 30;
-
-  // Build gradient from theme colors instead of hardcoded dark blue
-  const { r: bgR, g: bgG, b: bgB } = hexToRgb(bg);
-  const { r: priR, g: priG, b: priB } = hexToRgb(primary);
-  const { r: accR, g: accG, b: accB } = hexToRgb(accent);
-
-  const gradient = `
-    radial-gradient(ellipse at ${30 + Math.sin(frame / (fps * 10)) * 20}% ${40 + Math.cos(frame / (fps * 8)) * 20}%,
-      rgba(${priR}, ${priG}, ${priB}, 0.15) 0%, transparent 60%),
-    radial-gradient(ellipse at ${70 + Math.cos(frame / (fps * 7)) * 20}% ${60 + Math.sin(frame / (fps * 9)) * 25}%,
-      rgba(${accR}, ${accG}, ${accB}, 0.1) 0%, transparent 55%),
-    linear-gradient(${angle1}deg, ${bg} 0%, ${shiftColor(bg, light ? -0.05 : 0.05)} 40%, ${surface} 70%, ${bg} 100%)
-  `;
-
-  // Floating orbs — derived from theme chart colors with low opacity
-  const orbColors = theme.chartColors.slice(0, 5);
-  const orbOpacity = light ? 0.06 : 0.08;
-  const orbs = [
-    { x: 20, y: 30, size: 300, color: orbColors[0] || primary, speedX: 7, speedY: 11 },
-    { x: 70, y: 60, size: 250, color: orbColors[1] || accent, speedX: 9, speedY: 8 },
-    { x: 40, y: 80, size: 200, color: orbColors[2] || primary, speedX: 13, speedY: 6 },
-    { x: 80, y: 20, size: 350, color: orbColors[3] || accent, speedX: 11, speedY: 14 },
-    { x: 10, y: 70, size: 180, color: orbColors[4] || primary, speedX: 8, speedY: 10 },
-  ];
-
-  // Grid and overlay colors adapt to light vs dark backgrounds
-  const gridColor = light ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.02)";
-  const fadeColor = light
-    ? `rgba(${bgR},${bgG},${bgB},0.2)`
-    : `rgba(${bgR},${bgG},${bgB},0.4)`;
-
-  return (
-    <AbsoluteFill style={{ background: gradient }}>
-      {/* Floating glow orbs */}
-      {orbs.map((orb, i) => {
-        const ox = orb.x + Math.sin(frame / (fps * orb.speedX)) * 15;
-        const oy = orb.y + Math.cos(frame / (fps * orb.speedY)) * 12;
-        const { r, g, b } = hexToRgb(orb.color);
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: `${ox}%`,
-              top: `${oy}%`,
-              width: orb.size,
-              height: orb.size,
-              borderRadius: "50%",
-              background: `rgba(${r}, ${g}, ${b}, ${orbOpacity})`,
-              filter: `blur(${orb.size * 0.4}px)`,
-              transform: "translate(-50%, -50%)",
-              willChange: "transform",
-            }}
-          />
-        );
-      })}
-
-      {/* Subtle grid overlay */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `
-            linear-gradient(${gridColor} 1px, transparent 1px),
-            linear-gradient(90deg, ${gridColor} 1px, transparent 1px)
-          `,
-          backgroundSize: "60px 60px",
-          opacity: 0.5 + Math.sin(frame / (fps * 20)) * 0.2,
-        }}
-      />
-
-      {/* Top gradient fade for depth */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "30%",
-          background: `linear-gradient(to bottom, ${fadeColor}, transparent)`,
-        }}
-      />
-    </AbsoluteFill>
-  );
-};
 
 // ---------------------------------------------------------------------------
 // Types — aligned with edit_decisions artifact schema
@@ -217,6 +105,7 @@ interface Cut {
   layer?: string;
   type?: string;
   // Component-specific props
+  eyebrow?: string;
   text?: string;
   stat?: string;
   subtitle?: string;
@@ -280,8 +169,8 @@ interface Cut {
   vignette?: boolean;
   lightingFrom?: string;
   lightingTo?: string;
-  // Terminal scene props (type: "terminal_scene")
-  steps?: TerminalStep[];
+  // Code/terminal scene props (type: "code_scene" | "terminal_scene")
+  steps?: CodeStep[];
   terminalTitle?: string;
   prompt?: string;
   // Screenshot scene props (type: "screenshot_scene")
@@ -296,6 +185,9 @@ interface Cut {
   headers?: string[];
   rows?: any[];
   items?: any[];
+  highlightCell?: string;
+  /** Optional element-entrance transition for scenes that support it. */
+  enter?: TransitionId;
   /** Per-cut digital-host treatment: a preset name or inline override. */
   avatar?: string | AvatarOverride;
 }
@@ -615,12 +507,6 @@ interface SceneContext {
   transparentBg: boolean;
 }
 
-// Background variant for custom-template scenes, forced transparent when the
-// host is rendered as a full-frame background layer.
-function sceneBg(ctx: SceneContext): any {
-  return ctx.transparentBg ? "transparent" : ctx.cut.background;
-}
-
 interface SceneEntry {
   type: string;
   guard?: (cut: Cut) => boolean;
@@ -654,17 +540,18 @@ const SCENES: SceneEntry[] = [
       />
     ),
   },
-  {
-    type: "comparison",
-    guard: (c) => !!c.leftLabel && !!c.rightLabel && !!c.leftValue && !!c.rightValue,
-    render: ({ cut, textColor, bgColor }) => (
-      <ComparisonCard
-        leftLabel={cut.leftLabel!} rightLabel={cut.rightLabel!}
-        leftValue={cut.leftValue!} rightValue={cut.rightValue!}
-        title={cut.title} backgroundColor={bgColor} textColor={textColor}
+  ...["comparison", "comparison_scene"].map((t) => ({
+    type: t,
+    guard: (c: Cut) => !!c.leftLabel && !!c.rightLabel && !!c.leftValue && !!c.rightValue,
+    render: ({ cut }: SceneContext) => (
+      <ComparisonScene
+        title={cut.title}
+        leftLabel={cut.leftLabel!} leftValue={cut.leftValue!}
+        rightLabel={cut.rightLabel!} rightValue={cut.rightValue!}
+        enter={cut.enter}
       />
     ),
-  },
+  })),
   {
     type: "hero_title",
     guard: (c) => !!c.text,
@@ -672,19 +559,17 @@ const SCENES: SceneEntry[] = [
       <HeroTitle title={cut.text!} subtitle={cut.heroSubtitle || cut.subtitle} />
     ),
   },
-  {
-    type: "terminal_scene",
-    guard: (c) => !!c.steps,
-    render: ({ cut, theme, accent, bgColor }) => (
-      <TerminalScene
-        title={cut.terminalTitle || "Terminal"}
-        steps={cut.steps as TerminalStep[]}
+  ...["terminal_scene", "code_scene"].map((t) => ({
+    type: t,
+    guard: (c: Cut) => !!c.steps,
+    render: ({ cut }: SceneContext) => (
+      <CodeScene
+        terminalTitle={cut.terminalTitle}
+        steps={cut.steps!}
         prompt={cut.prompt}
-        accentColor={accent}
-        backgroundColor={bgColor || theme.backgroundColor}
       />
     ),
-  },
+  })),
   {
     type: "screenshot_scene",
     guard: (c) => !!c.backgroundImage && !!c.screenshotSteps,
@@ -777,35 +662,35 @@ const SCENES: SceneEntry[] = [
     type: "intro_scene",
     guard: (c) => !!c.title,
     render: (ctx) => (
-      <IntroScene title={ctx.cut.title!} subtitle={ctx.cut.subtitle} background={sceneBg(ctx)} />
+      <IntroScene title={ctx.cut.title!} subtitle={ctx.cut.subtitle} />
     ),
   },
   {
     type: "outro_scene",
     guard: (c) => !!c.headline,
     render: (ctx) => (
-      <OutroScene headline={ctx.cut.headline!} cta={ctx.cut.cta} background={sceneBg(ctx)} />
+      <OutroScene headline={ctx.cut.headline!} cta={ctx.cut.cta} />
     ),
   },
   {
     type: "concept_scene",
     guard: (c) => !!c.title && !!c.items,
     render: (ctx) => (
-      <ConceptScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} items={ctx.cut.items!} background={sceneBg(ctx)} />
+      <ConceptScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} items={ctx.cut.items!} enter={ctx.cut.enter} />
     ),
   },
   {
     type: "timeline_scene",
     guard: (c) => !!c.title && !!c.events,
     render: (ctx) => (
-      <TimelineScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} events={ctx.cut.events!} background={sceneBg(ctx)} />
+      <TimelineScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} events={ctx.cut.events!} enter={ctx.cut.enter} />
     ),
   },
   {
     type: "table_scene",
     guard: (c) => !!c.title && !!c.headers && !!c.rows,
     render: (ctx) => (
-      <TableScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} headers={ctx.cut.headers!} rows={ctx.cut.rows!} background={sceneBg(ctx)} />
+      <TableScene eyebrow={ctx.cut.eyebrow} title={ctx.cut.title!} headers={ctx.cut.headers!} rows={ctx.cut.rows!} highlightCell={ctx.cut.highlightCell} enter={ctx.cut.enter} />
     ),
   },
   {
@@ -951,9 +836,20 @@ const OverlayRenderer: React.FC<{ overlay: Overlay }> = ({ overlay }) => {
 export const Explainer: React.FC<ExplainerProps> = (props) => {
   const { cuts, overlays, captions, audio, avatar, unityBackground } = props;
   const { fps, durationInFrames, width, height } = useVideoConfig();
+  const frame = useCurrentFrame();
 
   // Resolve theme from props — playbook name, theme name, or custom themeConfig
   const theme = resolveTheme(props as Record<string, unknown>);
+
+  // Unified template theme: the template library (custom-templates) reads its
+  // colors/fonts via useTheme(); we drive it from the same theme name so the
+  // independent background and all scenes share one palette. The palette set
+  // mirrors Root.THEMES by name; unknown names fall back to the Root default.
+  const requestedThemeName =
+    (props.theme as string) || (props.playbook as string) || "";
+  const templateTheme = buildTemplateTheme(
+    requestedThemeName in PALETTES ? requestedThemeName : "flat-motion-graphics"
+  );
 
   // Full-frame digital host as the bottom layer, with the UI floating on top.
   const bgAvatar = !!avatar?.enabled && avatar?.layer === "background";
@@ -967,8 +863,25 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
   const screenOpacity = screen?.screenOpacity ?? 0.4;
   const screenTint = screen?.screenTint ?? "#0b2a52";
 
-  // The screen's own backdrop (warped together with the UI).
-  const bgGradient = <AnimatedBackground theme={theme} />;
+  // Warp-reveal: when warpRevealFrames > 0, the whole UI plane flies from a
+  // flat full-frame rectangle into the screen quad over the opening frames, so
+  // the perspective transform is visible. Otherwise the warp is static.
+  const warpRevealFrames = screen?.warpRevealFrames ?? 0;
+  const warpProgress =
+    warp && warpRevealFrames > 0
+      ? 1 - Math.pow(1 - Math.max(0, Math.min(1, frame / warpRevealFrames)), 3)
+      : 1;
+  const warpTransform = warp
+    ? warpProgress >= 1
+      ? quadMatrix3d(width, height, screen!.screenQuad!)
+      : animatedQuadMatrix3d(width, height, screen!.screenQuad!, warpProgress)
+    : "";
+
+  // The screen's own backdrop (warped together with the UI). The background is
+  // now a single independent, theme-driven layer; all template scenes render
+  // fully transparent on top of it.
+  const bgVariant = (props.background as BackgroundVariant) || "gradient";
+  const bgGradient = <Background variant={bgVariant} />;
 
   // UI content shown ON the screen — scenes + overlays + grade. No host, no
   // captions, no page backdrop (that is `bgGradient`).
@@ -1119,6 +1032,7 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
   // host + captions are flat overlays on top.
   if (warp) {
     return (
+      <TemplateThemeProvider theme={templateTheme}>
       <AbsoluteFill style={{ background: "#000", fontFamily: theme.headingFont || fontFamily }}>
         <Img
           src={resolveAsset(screen!.image!)}
@@ -1132,7 +1046,7 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
             width,
             height,
             transformOrigin: "0 0",
-            transform: quadMatrix3d(width, height, screen!.screenQuad!),
+            transform: warpTransform,
             backfaceVisibility: "hidden",
           }}
         >
@@ -1156,10 +1070,12 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
         {captionsEl}
         {audioEls}
       </AbsoluteFill>
+      </TemplateThemeProvider>
     );
   }
 
   return (
+    <TemplateThemeProvider theme={templateTheme}>
     <AbsoluteFill style={{ background: theme.backgroundColor, fontFamily: theme.headingFont || fontFamily }}>
       {bgGradient}
       {hostEl}
@@ -1167,5 +1083,6 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
       {captionsEl}
       {audioEls}
     </AbsoluteFill>
+    </TemplateThemeProvider>
   );
 };

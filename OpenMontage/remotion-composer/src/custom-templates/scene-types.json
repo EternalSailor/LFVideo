@@ -1,0 +1,54 @@
+{
+  "_comment": "模板库场景的单一事实源（SSOT，跨语言）。registry.ts 在运行时断言每个 zod schema 的字段与此处一致；scripts/pipeline_lint.py 据此校验 cut.type 与必填字段；SCENE_TYPES.md 由 scripts/gen_scene_types_md.py 从本文件自动生成。新增模板 = 在此登记 + 在对应 scene 文件写 zod schema + 在 registry.ts 接线。",
+  "scenes": [
+    {
+      "type": "intro_scene",
+      "template": "@IntroScene",
+      "description": "全屏开场标题（渐变描边主标题 + 可选副标题）。",
+      "required": ["title"],
+      "optional": ["subtitle"]
+    },
+    {
+      "type": "outro_scene",
+      "template": "@OutroScene",
+      "description": "全屏收尾（大标题 + 脉冲 CTA 按钮）。",
+      "required": ["headline"],
+      "optional": ["cta"]
+    },
+    {
+      "type": "concept_scene",
+      "template": "@ConceptScene",
+      "description": "纵向概念卡列表（图标 + 标签 + 标题 + 描述）。enter 为可选的元素入场过渡。",
+      "required": ["title", "items"],
+      "optional": ["eyebrow", "enter"]
+    },
+    {
+      "type": "timeline_scene",
+      "template": "@TimelineScene",
+      "description": "横向时间线卡片（年份 + 图标 + 标题 + 描述），带进度连线。enter 为可选的元素入场过渡。",
+      "required": ["title", "events"],
+      "optional": ["eyebrow", "enter"]
+    },
+    {
+      "type": "table_scene",
+      "template": "@TableScene",
+      "description": "通用表格：列由 headers 决定，每行是与之对齐的 cells[]。highlightCell 用 \"行-列\" 标注高亮。enter 为可选的行入场过渡。",
+      "required": ["title", "headers", "rows"],
+      "optional": ["eyebrow", "highlightCell", "enter"]
+    },
+    {
+      "type": "comparison_scene",
+      "template": "@SplitLayout",
+      "description": "左右对比双卡（基于 SplitLayout），value 走正文字号、自适应长句。enter 为可选的卡片入场过渡。",
+      "required": ["leftLabel", "leftValue", "rightLabel", "rightValue"],
+      "optional": ["title", "enter"]
+    },
+    {
+      "type": "code_scene",
+      "template": "@TerminalScene",
+      "description": "合成终端 / 代码场景：主题驱动配色、等宽字体，step 协议 cmd/out/pause/pill。",
+      "required": ["steps"],
+      "optional": ["terminalTitle", "prompt"]
+    }
+  ]
+}

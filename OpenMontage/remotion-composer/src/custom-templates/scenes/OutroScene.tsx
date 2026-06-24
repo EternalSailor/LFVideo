@@ -6,94 +6,89 @@ import {
 	useCurrentFrame,
 	useVideoConfig,
 } from 'remotion';
-import {AnimatedBackground} from '../primitives';
-import type {BackgroundVariant} from '../primitives';
-import {COLORS, FONT_SIZE, SPACING, RADIUS} from '../theme/tokens';
-import {FONT_FAMILY} from '../theme/fonts';
+import {z} from 'zod';
+import {useTheme} from '../theme/ThemeContext';
+import {withAlpha} from '../theme/util';
 
-interface Props {
-	headline: string;
-	cta?: string;
-	background?: BackgroundVariant;
-}
+export const outroSchema = z.object({
+	headline: z.string(),
+	cta: z.string().optional(),
+});
+export type OutroProps = z.infer<typeof outroSchema>;
 
-export const OutroScene: React.FC<Props> = ({
+export const OutroScene: React.FC<OutroProps> = ({
 	headline,
 	cta = '关注 · 一起验证 AI IDE 的真实能力',
-	background = 'gradient',
 }) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
+	const {colors, fonts, FONT_SIZE, SPACING, RADIUS} = useTheme();
 	const enter = spring({fps, frame, config: {damping: 20, stiffness: 90}});
 	const opacity = interpolate(enter, [0, 1], [0, 1]);
 	const translateY = interpolate(enter, [0, 1], [30, 0]);
 
-	return (
-		<AnimatedBackground variant={background}>
-			{/* Inject Pulsing Keyframes */}
-			<style>{`
-				@keyframes button-pulse {
-					0% { box-shadow: 0 8px 30px -4px rgba(79, 156, 249, 0.4); transform: scale(1); }
-					50% { box-shadow: 0 8px 35px 4px rgba(167, 139, 250, 0.6); transform: scale(1.03); }
-					100% { box-shadow: 0 8px 30px -4px rgba(79, 156, 249, 0.4); transform: scale(1); }
-				}
-			`}</style>
+	// frame 驱动的按钮脉冲（取代 CSS `button-pulse ... infinite`，3.5s 一循环）。
+	const pulse = (1 - Math.cos((frame / fps / 3.5) * Math.PI * 2)) / 2; // 0→1→0
+	const btnScale = 1 + 0.03 * pulse;
+	const btnBlur = 30 + 5 * pulse;
+	const btnSpread = -4 + 8 * pulse;
+	const btnShadow = `0 8px ${btnBlur}px ${btnSpread}px ${withAlpha(colors.accent[0], 0.4 * (1 - pulse))}, 0 8px ${btnBlur}px ${btnSpread}px ${withAlpha(colors.accent[1], 0.6 * pulse)}`;
 
-			<AbsoluteFill
+	return (
+		<AbsoluteFill
+			style={{
+				fontFamily: fonts.family,
+				justifyContent: 'center',
+				alignItems: 'center',
+				textAlign: 'center',
+				opacity,
+				transform: `translateY(${translateY}px)`,
+			}}
+		>
+			<div
 				style={{
-					fontFamily: FONT_FAMILY,
-					justifyContent: 'center',
-					alignItems: 'center',
-					textAlign: 'center',
-					opacity,
-					transform: `translateY(${translateY}px)`,
+					position: 'absolute',
+					width: 500,
+					height: 200,
+					borderRadius: '50%',
+					background: `radial-gradient(circle, ${colors.accent[3] ?? colors.accent[1]}14 0%, transparent 70%)`,
+					filter: 'blur(70px)',
+					zIndex: 0,
+					pointerEvents: 'none',
+				}}
+			/>
+
+			<div
+				style={{
+					fontSize: FONT_SIZE.title + 4,
+					fontWeight: 900,
+					color: colors.text.primary,
+					marginBottom: SPACING.xl,
+					maxWidth: 1400,
+					lineHeight: 1.25,
+					letterSpacing: -0.5,
+					zIndex: 1,
 				}}
 			>
-				{/* Glowing ambient background circle */}
-				<div
-					style={{
-						position: 'absolute',
-						width: 500,
-						height: 200,
-						borderRadius: '50%',
-						background: 'radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, transparent 70%)',
-						filter: 'blur(70px)',
-						zIndex: 0,
-						pointerEvents: 'none',
-					}}
-				/>
-
-				<div
-					style={{
-						fontSize: FONT_SIZE.title + 4,
-						fontWeight: 900,
-						color: COLORS.text.primary,
-						marginBottom: SPACING.xl,
-						maxWidth: 1400,
-						lineHeight: 1.25,
-						letterSpacing: -0.5,
-						zIndex: 1,
-					}}
-				>
-					{headline}
-				</div>
-				<div
-					style={{
-						fontSize: FONT_SIZE.subtitle,
-						fontWeight: 700,
-						color: COLORS.text.primary,
-						padding: `${SPACING.sm + 4}px ${SPACING.xl}px`,
-						borderRadius: RADIUS.pill,
-						background: `linear-gradient(135deg, ${COLORS.accent[0]} 0%, ${COLORS.accent[1]} 100%)`,
-						animation: 'button-pulse 3.5s infinite ease-in-out',
-						letterSpacing: 1.5,
-						zIndex: 1,
-						border: '1px solid rgba(255,255,255,0.1)',
-					}}
-				>
-					{cta}
-				</div>
-			</AbsoluteFill>
-		</AnimatedBackground>
+				{headline}
+			</div>
+			<div
+				style={{
+					fontSize: FONT_SIZE.subtitle,
+					fontWeight: 700,
+					color: colors.text.primary,
+					padding: `${SPACING.sm + 4}px ${SPACING.xl}px`,
+					borderRadius: RADIUS.pill,
+					background: `linear-gradient(135deg, ${colors.accent[0]} 0%, ${colors.accent[1]} 100%)`,
+					transform: `scale(${btnScale})`,
+					boxShadow: btnShadow,
+					letterSpacing: 1.5,
+					zIndex: 1,
+					border: '1px solid rgba(255,255,255,0.1)',
+				}}
+			>
+				{cta}
+			</div>
+		</AbsoluteFill>
 	);
 };

@@ -42,6 +42,30 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_DIR = REPO_ROOT / "shared" / "schemas"
 
+# Generated Remotion props live here; their cut.type must hit a renderable type.
+COMPOSER_DIR = REPO_ROOT / "OpenMontage" / "remotion-composer"
+SCENE_TYPES_JSON = COMPOSER_DIR / "src" / "custom-templates" / "scene-types.json"
+DEMO_PROPS_DIR = COMPOSER_DIR / "public" / "demo-props"
+
+# Non-template cut types the Explainer dispatcher renders directly (the template
+# scene types come from scene-types.json — the registry SSOT). A cut with no
+# ``type`` is a raw media clip and must instead carry a ``source``.
+BUILTIN_CUT_TYPES = {
+    "text_card",
+    "hero_title",
+    "stat_card",
+    "callout",
+    "comparison",  # legacy alias, still dispatched -> ComparisonScene
+    "terminal_scene",  # legacy alias, still dispatched -> CodeScene
+    "bar_chart",
+    "line_chart",
+    "pie_chart",
+    "kpi_grid",
+    "progress_bar",
+    "anime_scene",
+    "screenshot_scene",
+}
+
 # A single static picture may not stay on screen longer than this (see
 # shared/docs/remotion-spec.md §1.5). Sections longer than this must be cut
 # into shots[] rather than carrying one component for the whole paragraph.
@@ -401,6 +425,83 @@ def lint_episode(episode_dir: Path, report: Report) -> None:
             _check_anti_deadtime(stage, tag, report, promote)
 
 
+def _load_template_scene_manifest(
+    scene_types_json: Path,
+) -> tuple[set[str], dict[str, list[str]]]:
+    """Return (template scene types, type -> required fields) from the SSOT."""
+    data = json.loads(scene_types_json.read_text(encoding="utf-8"))
+    types: set[str] = set()
+    required: dict[str, list[str]] = {}
+    for scene in data.get("scenes", []):
+        t = scene["type"]
+        types.add(t)
+        required[t] = list(scene.get("required", []))
+    return types, required
+
+
+def lint_remotion_props(
+    report: Report,
+    props_dir: Path = DEMO_PROPS_DIR,
+    scene_types_json: Path = SCENE_TYPES_JSON,
+) -> None:
+    """Every ``cut.type`` in generated Remotion props must be renderable.
+
+    The Explainer silently drops a cut whose ``type`` matches no dispatch case
+    (or falls back to a raw media clip), so a typo'd / retired type vanishes
+    from the video with no error. This pins generated props to the template
+    registry (scene-types.json) plus the built-in dispatcher types, and checks
+    that each template cut carries its schema-required fields.
+    """
+    if not scene_types_json.exists():
+        report.note(f"remotion-props: {scene_types_json} not found, skipped")
+        return
+    if not props_dir.exists():
+        report.note(f"remotion-props: {props_dir} not found, skipped")
+        return
+
+    template_types, template_required = _load_template_scene_manifest(scene_types_json)
+    renderable = template_types | BUILTIN_CUT_TYPES
+
+    for props_file in sorted(props_dir.glob("*.json")):
+        try:
+            shown = props_file.relative_to(REPO_ROOT)
+        except ValueError:
+            shown = props_file.name
+        tag = f"[{shown}]"
+        try:
+            data = json.loads(props_file.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            report.error(f"{tag} props: invalid JSON ({exc})")
+            continue
+        cuts = data.get("cuts")
+        if not isinstance(cuts, list):
+            continue
+        for cut in cuts:
+            if not isinstance(cut, dict):
+                continue
+            cid = cut.get("id", "?")
+            ctype = cut.get("type")
+            if not ctype:
+                if not cut.get("source"):
+                    report.error(
+                        f"{tag} props: cut '{cid}' has no type and no source "
+                        f"(would render nothing)"
+                    )
+                continue
+            if ctype not in renderable:
+                report.error(
+                    f"{tag} props: cut '{cid}' type '{ctype}' is not registered "
+                    f"(not a template scene nor a built-in dispatcher type)"
+                )
+                continue
+            missing = [f for f in template_required.get(ctype, []) if cut.get(f) in (None, "", [])]
+            if missing:
+                report.error(
+                    f"{tag} props: cut '{cid}' ({ctype}) missing required "
+                    f"field(s): {', '.join(missing)}"
+                )
+
+
 def _has_numbered_stages(path: Path) -> bool:
     return any(c.is_dir() and re.match(r"\d+-", c.name) for c in path.iterdir())
 
@@ -431,6 +532,9 @@ def main(argv: list[str]) -> int:
     report = Report()
     for episode in episodes:
         lint_episode(episode, report)
+
+    # Generated Remotion props (cut.type must hit the template registry).
+    lint_remotion_props(report)
 
     for note in report.notes:
         print(f"note  {note}")

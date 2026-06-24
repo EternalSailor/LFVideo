@@ -1,5 +1,5 @@
 import React from 'react';
-import {FONT_SIZE, COLORS, RADIUS} from '../theme/tokens';
+import {useTheme} from '../theme/ThemeContext';
 
 interface Props {
 	text: string;
@@ -14,6 +14,7 @@ export const Subtitle: React.FC<Props> = ({
 	bottom = 80,
 	maxWidth = 1400,
 }) => {
+	const {colors, FONT_SIZE, RADIUS} = useTheme();
 	return (
 		<div
 			style={{
@@ -27,7 +28,7 @@ export const Subtitle: React.FC<Props> = ({
 				borderRadius: RADIUS.md,
 				fontSize: FONT_SIZE.bodyLg,
 				lineHeight: 1.5,
-				color: COLORS.text.primary,
+				color: colors.text.primary,
 				textAlign: 'center',
 				fontWeight: 600,
 				letterSpacing: 0.5,
