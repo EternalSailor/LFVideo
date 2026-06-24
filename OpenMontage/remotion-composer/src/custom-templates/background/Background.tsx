@@ -7,8 +7,19 @@ import {
 	useCurrentFrame,
 	useVideoConfig,
 } from 'remotion';
-import {useTheme} from '../theme/ThemeContext';
 import type {Palette} from '../theme/palettes';
+
+// 背景层的独立配色（全息蓝）。背景已是独立图层，颜色不再跟随场景主题，
+// 而由这里统一驱动，便于后续叠加前端背景特效塑造「全息投影」观感。
+// 第一版只调大致色相：深蓝→亮蓝渐变 + 青蓝辉光 + 偏亮的网格线。
+const HOLOGRAPHIC: Palette = {
+	bg: {from: '#041B3D', to: '#0B5BAA'},
+	text: {primary: '#EAF6FF', secondary: '#A9CCEA', muted: '#6F92B5'},
+	accent: ['#36D0FF', '#5FE6FF', '#2A8CF0', '#9CEFFF'],
+	line: 'rgba(120,205,255,0.18)',
+	surface: 'rgba(120,205,255,0.06)',
+	codeBg: '#041222',
+};
 
 // 单一独立背景层。模板场景一律全透明，背景全部由这里统一渲染：
 //   gradient / grid / particles —— 主题色驱动的程序化背景
@@ -210,7 +221,7 @@ export const Background: React.FC<BackgroundProps> = ({
 	videoStartFrom,
 	overlayOpacity = 0.55,
 }) => {
-	const {colors} = useTheme();
+	const colors = HOLOGRAPHIC;
 
 	if (video || image) {
 		return (
