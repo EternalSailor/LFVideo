@@ -1,91 +1,65 @@
 import React from 'react';
-import {
-	AbsoluteFill,
-	interpolate,
-	spring,
-	useCurrentFrame,
-	useVideoConfig,
-} from 'remotion';
-import {AnimatedBackground, TitleFrame} from '../primitives';
-import type {BackgroundVariant} from '../primitives';
-import {COLORS, FONT_SIZE, SPACING, RADIUS, SPRING} from '../theme/tokens';
-import {FONT_FAMILY} from '../theme/fonts';
+import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
+import {z} from 'zod';
+import {TitleFrame} from '../primitives';
+import {useTheme} from '../theme/ThemeContext';
+import {withAlpha} from '../theme/util';
+import {Animated} from '../animation';
+import {osc01} from '../animation/presence';
+import {TRANSITION_IDS, type TransitionId} from '../animation/types';
 
-export interface ConceptItem {
-	label: string;
-	title: string;
-	desc: string;
-	icon: string;
-}
+export const conceptItemSchema = z.object({
+	label: z.string(),
+	title: z.string(),
+	desc: z.string(),
+	icon: z.string(),
+});
+export type ConceptItem = z.infer<typeof conceptItemSchema>;
 
-interface Props {
-	eyebrow?: string;
-	title: string;
-	items: ConceptItem[];
-	background?: BackgroundVariant;
-	// 卡片入场起始帧 + 间隔
-	cardStart?: number;
-	cardStagger?: number;
-}
+export const conceptSchema = z.object({
+	eyebrow: z.string().optional(),
+	title: z.string(),
+	items: z.array(conceptItemSchema),
+	enter: z.enum(TRANSITION_IDS).optional(),
+});
+export type ConceptProps = z.infer<typeof conceptSchema>;
 
 const ItemCard: React.FC<{
 	item: ConceptItem;
 	color: string;
-	startFrame: number;
+	delay: number;
 	index: number;
-}> = ({item, color, startFrame, index}) => {
+	enter: TransitionId;
+}> = ({item, color, delay, index, enter}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
-	const progress = spring({
-		fps,
-		frame: frame - startFrame,
-		config: SPRING.snappy,
-	});
-	const opacity = interpolate(progress, [0, 1], [0, 1]);
-	const translateY = interpolate(progress, [0, 1], [60, 0]);
-	const scale = interpolate(progress, [0, 1], [0.95, 1]);
+	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
 
-	// Unique animation names per card index
-	const cardAnimName = `card-glow-${index}`;
-	const iconAnimName = `icon-float-${index}`;
+	// frame 驱动的常驻辉光 / 图标浮动（取代 CSS `card-glow`/`icon-float ... infinite`）。
+	const glow = osc01(frame, fps, 6, index * 0.5);
+	const floatW = (1 - Math.cos(((frame / fps + index * 0.3) / 5) * Math.PI * 2)) / 2;
+	const cardBg = withAlpha(colors.bg.to, 0.45);
+	const cardBorder = withAlpha(color, 0.13 + glow * (0.47 - 0.13));
+	const cardShadow = `0 10px 40px -10px rgba(0,0,0,${0.5 + 0.2 * glow}), inset 0 1px 1px rgba(255,255,255,0.05), 0 0 ${18 * glow}px ${withAlpha(color, 0.13 * glow)}`;
+	const iconTransform = `translateY(${-6 * floatW}px) rotate(${4 * floatW}deg)`;
 
 	return (
+		<Animated enter={enter} delay={delay} distance={60} style={{marginBottom: SPACING.md}}>
 		<div
-			className={`concept-card-${index}`}
 			style={{
-				opacity,
-				transform: `translateY(${translateY}px) scale(${scale})`,
 				display: 'flex',
 				alignItems: 'flex-start',
 				gap: SPACING.md,
-				background: 'rgba(40, 26, 44, 0.45)', // warm deep glass
-				border: `1.5px solid ${color}22`,
+				background: cardBg,
+				border: `1.5px solid ${cardBorder}`,
 				borderRadius: RADIUS.lg,
 				padding: `${SPACING.md + 4}px ${SPACING.lg}px`,
-				marginBottom: SPACING.md,
 				backdropFilter: 'blur(16px)',
-				boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05)',
-				animation: `${cardAnimName} 6s infinite ease-in-out`,
-				animationDelay: `${index * 0.5}s`,
+				boxShadow: cardShadow,
 				position: 'relative',
 				overflow: 'hidden',
 			}}
 		>
-			{/* Inject card-specific CSS animations dynamically */}
-			<style>{`
-				@keyframes ${cardAnimName} {
-					0% { border-color: ${color}22; box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0px ${color}00; }
-					50% { border-color: ${color}77; box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7), 0 0 18px ${color}22; }
-					100% { border-color: ${color}22; box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0px ${color}00; }
-				}
-				@keyframes ${iconAnimName} {
-					0% { transform: translateY(0px) rotate(0deg); }
-					50% { transform: translateY(-6px) rotate(4deg); }
-					100% { transform: translateY(0px) rotate(0deg); }
-				}
-			`}</style>
-
-			{/* Soft color glow spot behind icon */}
 			<div
 				style={{
 					position: 'absolute',
@@ -99,7 +73,6 @@ const ItemCard: React.FC<{
 				}}
 			/>
 
-			{/* Animated Icon Box */}
 			<div
 				style={{
 					width: 80,
@@ -113,8 +86,7 @@ const ItemCard: React.FC<{
 					fontSize: 40,
 					flexShrink: 0,
 					boxShadow: `0 4px 20px -2px ${color}18`,
-					animation: `${iconAnimName} 5s infinite ease-in-out`,
-					animationDelay: `${index * 0.3}s`,
+					transform: iconTransform,
 				}}
 			>
 				{item.icon}
@@ -138,7 +110,7 @@ const ItemCard: React.FC<{
 					style={{
 						fontSize: FONT_SIZE.subtitle,
 						fontWeight: 800,
-						color: COLORS.text.primary,
+						color: colors.text.primary,
 						marginBottom: SPACING.xs,
 						lineHeight: 1.2,
 						letterSpacing: -0.5,
@@ -149,7 +121,7 @@ const ItemCard: React.FC<{
 				<div
 					style={{
 						fontSize: FONT_SIZE.body,
-						color: COLORS.text.secondary,
+						color: colors.text.secondary,
 						lineHeight: 1.65,
 					}}
 				>
@@ -157,39 +129,35 @@ const ItemCard: React.FC<{
 				</div>
 			</div>
 		</div>
+		</Animated>
 	);
 };
 
-export const ConceptScene: React.FC<Props> = ({
-	eyebrow,
-	title,
-	items,
-	background = 'gradient',
-	cardStart = 20,
-	cardStagger = 25,
-}) => {
+export const ConceptScene: React.FC<
+	ConceptProps & {cardStart?: number; cardStagger?: number}
+> = ({eyebrow, title, items, cardStart = 20, cardStagger = 25, enter = 'rise-pop'}) => {
+	const {colors, fonts, SPACING} = useTheme();
 	return (
-		<AnimatedBackground variant={background}>
-			<AbsoluteFill
-				style={{
-					fontFamily: FONT_FAMILY,
-					padding: `${SPACING.xl}px ${SPACING.gutter}px`,
-					display: 'flex',
-					flexDirection: 'column',
-					justifyContent: 'center',
-				}}
-			>
-				<TitleFrame eyebrow={eyebrow} title={title} />
-				{items.map((item, i) => (
-					<ItemCard
-						key={item.title}
-						item={item}
-						color={COLORS.accent[i % COLORS.accent.length]}
-						startFrame={cardStart + i * cardStagger}
-						index={i}
-					/>
-				))}
-			</AbsoluteFill>
-		</AnimatedBackground>
+		<AbsoluteFill
+			style={{
+				fontFamily: fonts.family,
+				padding: `${SPACING.xl}px ${SPACING.gutter}px`,
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'center',
+			}}
+		>
+			<TitleFrame eyebrow={eyebrow} title={title} />
+			{items.map((item, i) => (
+				<ItemCard
+					key={item.title}
+					item={item}
+					color={colors.accent[i % colors.accent.length]}
+					delay={cardStart + i * cardStagger}
+					index={i}
+					enter={enter}
+				/>
+			))}
+		</AbsoluteFill>
 	);
 };

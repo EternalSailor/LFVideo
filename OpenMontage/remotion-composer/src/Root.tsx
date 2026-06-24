@@ -1,5 +1,6 @@
 import { Composition, CalculateMetadataFunction } from "remotion";
 import { Explainer, ExplainerProps } from "./Explainer";
+import { BackgroundShowcase, SHOWCASE_FRAMES } from "./BackgroundShowcase";
 import ep02ShotsProps from "../public/demo-props/ep02-shots.json";
 
 // ---------------------------------------------------------------------------
@@ -144,6 +145,14 @@ export const Root: React.FC = () => {
         height={1080}
         defaultProps={ep02ShotsProps as unknown as ExplainerProps}
         calculateMetadata={calculateMetadata}
+      />
+      <Composition
+        id="BackgroundShowcase"
+        component={BackgroundShowcase}
+        durationInFrames={SHOWCASE_FRAMES}
+        fps={30}
+        width={1920}
+        height={1080}
       />
     </>
   );
