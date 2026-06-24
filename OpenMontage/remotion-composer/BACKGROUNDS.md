@@ -32,6 +32,7 @@ import {Background} from './custom-templates';
 | `grid` | 渐变底 + 透视网格地板 + 扫描线 | 表格 / 数据类 |
 | `particles` | 渐变底 + 漂浮粒子 + 扫描线 | 轻量点缀 |
 | `holo` | 网格地板 + 光束 + 丝线 + 扫描线（满配） | 开场 / 概念 / 结尾等想要强全息感的镜头 |
+| `video` | 全息底 + **随机轮播背景视频**（灰度→透明 + 交叉淡入淡出）+ 扫描线 | 想用视频纹理做动态全息底 |
 | `transparent` | 不画任何底（返回 `null`） | 让下层数字人 / 房间图直接透出 |
 
 也支持图片 / 视频底（优先级高于 variant）：
@@ -48,6 +49,42 @@ import {Background} from './custom-templates';
 ```bash
 python build_ep02_shots_props.py
 ```
+
+---
+
+## 1.5 视频轮播底：`variant="video"` / `<VideoCarousel />`
+
+把一组背景视频**随机轮播**作为背景层。关键特性：
+
+- **灰度 → 透明**：用 SVG `feColorMatrix` 把每个像素的亮度(luminance)解析为 alpha——越亮越不透明、越暗越透明，原始颜色保留。所以「黑底亮色」的特效视频会作为发光叠层融进下层全息蓝底。需要反相（亮处透明）时传 `invert`。
+- **随机轮播**：用 Remotion 的确定性随机 `random()` 打乱顺序，导出可复现。
+- **交叉淡入淡出**：切换视频时上一段淡出、下一段淡入（重叠 `fadeSec`）。
+- 帧驱动，无 `requestAnimationFrame` / CSS keyframes。
+
+### 放视频 + 登记
+
+```bash
+# 1) 把 .mp4/.webm/.mov 丢进：
+#    remotion-composer/public/video-background/
+# 2) 重新生成清单（扫描目录写入 manifest.json）：
+python scripts/gen_video_bg_manifest.py
+```
+
+清单为空时 `variant="video"` 自动退化成纯全息底（不报错）。
+
+### 单独使用组件
+
+```tsx
+import {VideoCarousel} from './custom-templates';
+
+<VideoCarousel clipDurationSec={6} fadeSec={1} invert={false} />
+```
+
+| 组件 | 可调 props |
+| --- | --- |
+| `<VideoCarousel />` | `videos?`（默认读 manifest.json）、`clipDurationSec`（默认 6）、`fadeSec`（默认 1）、`invert`（默认 false）、`seed`（换顺序）、`objectFit`（`cover`/`contain`） |
+
+源码：`src/custom-templates/background/VideoCarousel.tsx`。
 
 ---
 
