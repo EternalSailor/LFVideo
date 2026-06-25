@@ -883,9 +883,15 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
           3
         )
       : 1;
-  const warpTransform = warp
+  // The screen backdrop (room/tint/gradient) and color-grade are ALWAYS pinned
+  // to the final quad (static) so the lit-screen look stays constant; only the
+  // scene content uses the animated transform and flies in from flat full-frame.
+  const staticWarpTransform = warp
+    ? quadMatrix3d(width, height, screen!.screenQuad!)
+    : "";
+  const contentWarpTransform = warp
     ? warpProgress >= 1
-      ? quadMatrix3d(width, height, screen!.screenQuad!)
+      ? staticWarpTransform
       : animatedQuadMatrix3d(width, height, screen!.screenQuad!, warpProgress)
     : "";
 
@@ -921,9 +927,10 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
   const bgVariant = (currentCut?.background || props.background as BackgroundVariant) || "gradient";
   const bgGradient = <Background variant={bgVariant as BackgroundVariant} />;
 
-  // UI content shown ON the screen — scenes + overlays + grade. No host, no
-  // captions, no page backdrop (that is `bgGradient`).
-  const screenContent = (
+  // Scene content — the "elements" that fly in during the warp-reveal: visual
+  // scenes, overlays and the overlay-mode host. In the warped path these hold
+  // flat & full-frame first (readable) then animate into the screen quad.
+  const sceneLayers = (
     <>
       {/* Layer 1: Visual scenes */}
       {cuts.map((cut) => {
@@ -962,10 +969,15 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
           }))}
         />
       )}
+    </>
+  );
 
-      {/* Layer 2.9: global warm color-grade + vignette — fuses the 3D host and
-          the flat UI into one graded image. Sits above scenes + host, below
-          captions so subtitles stay crisp. */}
+  // Global warm color-grade + vignette — fuses the 3D host and the flat UI into
+  // one graded image. In the warped path this stays pinned to the final quad
+  // (static) so the screen's grade is constant while the scene flies in. Sits
+  // above scenes + host, below captions so subtitles stay crisp.
+  const gradeLayers = (
+    <>
       <AbsoluteFill
         style={{
           pointerEvents: "none",
@@ -983,7 +995,15 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
             "radial-gradient(ellipse 78% 72% at 50% 42%, transparent 55%, rgba(15,8,18,0.5) 100%)",
         }}
       />
+    </>
+  );
 
+  // UI content shown ON the screen — scenes + overlays + grade. No host, no
+  // captions, no page backdrop (that is `bgGradient`).
+  const screenContent = (
+    <>
+      {sceneLayers}
+      {gradeLayers}
     </>
   );
 
@@ -1069,6 +1089,15 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
   // Warped path: room shot behind, UI perspective-mapped into the screen quad;
   // host + captions are flat overlays on top.
   if (warp) {
+    const warpLayerStyle = {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width,
+      height,
+      transformOrigin: "0 0",
+      backfaceVisibility: "hidden",
+    } as const;
     return (
       <TemplateThemeProvider theme={templateTheme}>
         <AbsoluteFill style={{ background: "#000", fontFamily: theme.headingFont || fontFamily }}>
@@ -1076,18 +1105,9 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
             src={resolveAsset(screen!.image!)}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
             from={-2417} />
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width,
-              height,
-              transformOrigin: "0 0",
-              transform: warpTransform,
-              backfaceVisibility: "hidden",
-            }}
-          >
+          {/* Screen backdrop (tint + page gradient + holographic wash) — pinned
+              to the final quad (static) so the lit-screen look stays constant. */}
+          <div style={{ ...warpLayerStyle, transform: staticWarpTransform }}>
             <AbsoluteFill
               style={{ background: hexToRgba(screenTint, screenOpacity), overflow: "hidden" }}
             >
@@ -1101,8 +1121,17 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
                   mixBlendMode: "screen",
                 }}
               />
-              {screenContent}
             </AbsoluteFill>
+          </div>
+          {/* Scene content — the elements that hold flat & full-frame first
+              (readable) then fly into the screen quad over the warp-reveal. */}
+          <div style={{ ...warpLayerStyle, transform: contentWarpTransform, overflow: "hidden" }}>
+            {sceneLayers}
+          </div>
+          {/* Color-grade + vignette — also pinned to the final quad (static) so
+              the screen's grade is constant as the scene content flies in. */}
+          <div style={{ ...warpLayerStyle, transform: staticWarpTransform }}>
+            {gradeLayers}
           </div>
           {hostEl}
           {titleOverlay}
