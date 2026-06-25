@@ -866,11 +866,22 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
 
   // Warp-reveal: when warpRevealFrames > 0, the whole UI plane flies from a
   // flat full-frame rectangle into the screen quad over the opening frames, so
-  // the perspective transform is visible. Otherwise the warp is static.
+  // the perspective transform is visible. warpHoldFrames keeps the plane flat
+  // & full-frame first (so viewers read the content head-on) before the fly-in.
+  // Otherwise the warp is static.
   const warpRevealFrames = screen?.warpRevealFrames ?? 0;
+  const warpHoldFrames = screen?.warpHoldFrames ?? 0;
   const warpProgress =
     warp && warpRevealFrames > 0
-      ? 1 - Math.pow(1 - Math.max(0, Math.min(1, frame / warpRevealFrames)), 3)
+      ? 1 -
+        Math.pow(
+          1 -
+            Math.max(
+              0,
+              Math.min(1, (frame - warpHoldFrames) / warpRevealFrames)
+            ),
+          3
+        )
       : 1;
   const warpTransform = warp
     ? warpProgress >= 1
