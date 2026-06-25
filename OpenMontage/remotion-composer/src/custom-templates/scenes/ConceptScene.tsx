@@ -30,10 +30,21 @@ const ItemCard: React.FC<{
 	delay: number;
 	index: number;
 	enter: TransitionId;
-}> = ({item, color, delay, index, enter}) => {
+	tier: 0 | 1 | 2;
+}> = ({item, color, delay, index, enter, tier}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
+
+	// 方案 B：密度分档动态收紧字号/图标/间距（仍不低于 FONT_SIZE.min=24），
+	// 让密集内容主动变紧凑、保持可读，而不是交给 AutoFit 把整块等比缩到很小。
+	const ICON = [80, 72, 64][tier];
+	const ICON_FONT = [40, 34, 30][tier];
+	const TITLE = [FONT_SIZE.subtitle, FONT_SIZE.bodyLg, FONT_SIZE.body][tier];
+	const DESC = [FONT_SIZE.body, FONT_SIZE.body - 2, FONT_SIZE.min][tier];
+	const PAD_Y = [SPACING.md + 4, SPACING.md, SPACING.sm + 4][tier];
+	const PAD_X = [SPACING.lg, SPACING.md + 4, SPACING.md][tier];
+	const GAP = [SPACING.md, SPACING.sm + 4, SPACING.sm][tier];
 
 	// frame 驱动的常驻辉光 / 图标浮动（取代 CSS `card-glow`/`icon-float ... infinite`）。
 	const glow = osc01(frame, fps, 6, index * 0.5);
@@ -49,11 +60,11 @@ const ItemCard: React.FC<{
 			style={{
 				display: 'flex',
 				alignItems: 'flex-start',
-				gap: SPACING.md,
+				gap: GAP,
 				background: cardBg,
 				border: `1.5px solid ${cardBorder}`,
 				borderRadius: RADIUS.lg,
-				padding: `${SPACING.md + 4}px ${SPACING.lg}px`,
+				padding: `${PAD_Y}px ${PAD_X}px`,
 				backdropFilter: 'blur(16px)',
 				boxShadow: cardShadow,
 				position: 'relative',
@@ -75,15 +86,15 @@ const ItemCard: React.FC<{
 
 			<div
 				style={{
-					width: 80,
-					height: 80,
+					width: ICON,
+					height: ICON,
 					borderRadius: RADIUS.md,
 					background: `${color}18`,
 					border: `1.5px solid ${color}44`,
 					display: 'flex',
 					alignItems: 'center',
 					justifyContent: 'center',
-					fontSize: 40,
+					fontSize: ICON_FONT,
 					flexShrink: 0,
 					boxShadow: `0 4px 20px -2px ${color}18`,
 					transform: iconTransform,
@@ -108,7 +119,7 @@ const ItemCard: React.FC<{
 				</div>
 				<div
 					style={{
-						fontSize: FONT_SIZE.subtitle,
+						fontSize: TITLE,
 						fontWeight: 800,
 						color: colors.text.primary,
 						marginBottom: SPACING.xs,
@@ -120,7 +131,7 @@ const ItemCard: React.FC<{
 				</div>
 				<div
 					style={{
-						fontSize: FONT_SIZE.body,
+						fontSize: DESC,
 						color: colors.text.secondary,
 						lineHeight: 1.65,
 					}}
@@ -138,9 +149,12 @@ export const ConceptScene: React.FC<
 > = ({items, cardStart = 20, cardStagger = 25, enter = 'rise-pop'}) => {
 	const {colors, fonts, SPACING} = useTheme();
 
-	// 密度分档：条目多时换多列排布，而不是被 AutoFit 一味等比缩小到字很小。
-	// ≤4 条：单列；5–9 条：双列；>9 条：三列。
-	const columns = items.length <= 4 ? 1 : items.length <= 9 ? 2 : 3;
+	// 密度分档（fit-to-fill + 方案 B）：条目多时换多列排布并配合字号/间距收紧，
+	// 而不是被 AutoFit 一味等比缩小到字很小。
+	// tier 0 (≤4 条)：单列、大字；tier 1 (5–9 条)：双列；tier 2 (>9 条)：三列、紧凑字。
+	const tier: 0 | 1 | 2 = items.length <= 4 ? 0 : items.length <= 9 ? 1 : 2;
+	const columns = [1, 2, 3][tier];
+	const gridGap = [SPACING.md, SPACING.md, SPACING.sm][tier];
 
 	return (
 		<AutoFit paddingX={SPACING.gutter} paddingY={SPACING.xl}>
@@ -150,7 +164,7 @@ export const ConceptScene: React.FC<
 					display: 'grid',
 					gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
 					alignItems: 'start',
-					gap: SPACING.md,
+					gap: gridGap,
 				}}
 			>
 				{items.map((item, i) => (
@@ -161,6 +175,7 @@ export const ConceptScene: React.FC<
 						delay={cardStart + i * cardStagger}
 						index={i}
 						enter={enter}
+						tier={tier}
 				/>
 				))}
 			</div>

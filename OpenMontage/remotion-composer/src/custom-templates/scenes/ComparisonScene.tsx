@@ -25,11 +25,24 @@ const Card: React.FC<{
 	color: string;
 	delay: number;
 	enter: TransitionId;
-}> = ({label, value, color, delay, enter}) => {
+	tier: 0 | 1;
+}> = ({label, value, color, delay, enter, tier}) => {
 	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
 
 	// 长句用正文字号、短句用副标题字号，避免长句溢出。
-	const valueFontSize = value.length > 36 ? FONT_SIZE.bodyLg : FONT_SIZE.subtitle;
+	// 方案 B：两栏都是长文（tier 1）时整体再降一档字号并收紧内边距/间距，
+	// 让两段长文并排也读得清、塞得下，而不是交给 AutoFit 把整组等比缩小。
+	const longText = value.length > 36;
+	const valueFontSize =
+		tier === 0
+			? longText
+				? FONT_SIZE.bodyLg
+				: FONT_SIZE.subtitle
+			: longText
+				? FONT_SIZE.body
+				: FONT_SIZE.bodyLg;
+	const PAD_Y = tier === 0 ? SPACING.xl : SPACING.lg;
+	const GAP = tier === 0 ? SPACING.lg : SPACING.md;
 	const cardBg = withAlpha(colors.bg.to, 0.5);
 
 	return (
@@ -41,11 +54,11 @@ const Card: React.FC<{
 				display: 'flex',
 				flexDirection: 'column',
 				justifyContent: 'center',
-				gap: SPACING.lg,
+				gap: GAP,
 				background: cardBg,
 				border: `1.5px solid ${color}44`,
 				borderRadius: RADIUS.lg,
-				padding: `${SPACING.xl}px ${SPACING.lg}px`,
+				padding: `${PAD_Y}px ${SPACING.lg}px`,
 				backdropFilter: 'blur(16px)',
 				boxShadow: `0 20px 50px -15px rgba(0,0,0,0.6), 0 0 30px -10px ${color}22`,
 				position: 'relative',
@@ -106,6 +119,10 @@ export const ComparisonScene: React.FC<ComparisonProps> = ({
 }) => {
 	const {colors, fonts, SPACING} = useTheme();
 
+	// 密度分档（方案 B）：两栏都是长文时切到 tier 1，整体降一档字号、收紧内边距，
+	// 让两段长文并排仍读得清，而不是被 AutoFit 一味等比缩小。
+	const tier: 0 | 1 = leftValue.length > 50 && rightValue.length > 50 ? 1 : 0;
+
 	return (
 		<AutoFit
 			paddingX={SPACING.gutter}
@@ -122,8 +139,8 @@ export const ComparisonScene: React.FC<ComparisonProps> = ({
 					width: 1180,
 				}}
 			>
-				<Card label={leftLabel} value={leftValue} color={colors.accent[0]} delay={15} enter={enter} />
-				<Card label={rightLabel} value={rightValue} color={colors.accent[2] ?? colors.accent[1]} delay={25} enter={enter} />
+				<Card label={leftLabel} value={leftValue} color={colors.accent[0]} delay={15} enter={enter} tier={tier} />
+				<Card label={rightLabel} value={rightValue} color={colors.accent[2] ?? colors.accent[1]} delay={25} enter={enter} tier={tier} />
 			</div>
 		</AutoFit>
 	);

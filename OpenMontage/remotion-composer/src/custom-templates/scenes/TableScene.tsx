@@ -34,7 +34,7 @@ const TableCell: React.FC<{
 	align?: 'left' | 'center';
 	colIndex: number;
 	rowIndex: number;
-	dense?: boolean;
+	tier?: 0 | 1 | 2;
 }> = ({
 	content,
 	isHeader = false,
@@ -43,12 +43,18 @@ const TableCell: React.FC<{
 	align = 'left',
 	colIndex,
 	rowIndex,
-	dense = false,
+	tier = 0,
 }) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
 	const headerBg = withAlpha(colors.bg.to, 0.7);
+
+	// 方案 B：行数越多，单元格内边距/字号越紧凑（仍不低于 FONT_SIZE.min=24）。
+	const PAD_Y = [SPACING.md, SPACING.sm, SPACING.xs + 4][tier];
+	const PAD_X = [SPACING.lg, SPACING.md + 4, SPACING.md][tier];
+	const HEADER_FONT = FONT_SIZE.body + [2, 0, 0][tier];
+	const DATA_FONT = [FONT_SIZE.body - 1, FONT_SIZE.body - 2, FONT_SIZE.min][tier];
 
 	// frame 驱动的高亮闪烁（取代 CSS `cell-blink ... infinite`，2s 一循环）。
 	const blink = highlighted ? osc01(frame, fps, 2) : 0;
@@ -59,10 +65,8 @@ const TableCell: React.FC<{
 		<div
 			style={{
 				flex: colIndex === 0 ? 1.2 : 1.5,
-				padding: `${dense ? SPACING.sm : SPACING.md}px ${SPACING.lg}px`,
-				fontSize: isHeader
-					? FONT_SIZE.body + (dense ? 0 : 2)
-					: FONT_SIZE.body - (dense ? 2 : 1),
+				padding: `${PAD_Y}px ${PAD_X}px`,
+				fontSize: isHeader ? HEADER_FONT : DATA_FONT,
 				fontWeight: isHeader ? 900 : colIndex === 0 ? 800 : 500,
 				color:
 					isHeader || colIndex === 0
@@ -104,13 +108,15 @@ export const TableScene: React.FC<
 	const {fps, height} = useVideoConfig();
 	const {colors, fonts, SPACING, RADIUS, SPRING} = useTheme();
 
-	const dense = rows.length > 4;
+	// 密度分档（方案 B）：≤4 行为 tier 0（8行以内 tier 1，更多 tier 2，
+	// 逐档收紧字号/内边距，而不是交给 AutoFit 把整表等比缩到很小。
+	const tier: 0 | 1 | 2 = rows.length <= 4 ? 0 : rows.length <= 8 ? 1 : 2;
 
 	// 行高随行数自适应：行少时把行撑高，填满竖向安全区；行多时收紧（仍由 AutoFit 兜底缩放）。
 	// 这样无论几行，表格都占满约 90% 的竖向安全区，而不是挤在中间留大片空白。
 	const availH = height - SPACING.xl * 2;
 	const rowMinHeight = Math.max(
-		56,
+		tier === 2 ? 48 : 56,
 		Math.min(190, (availH * 0.9) / (rows.length + 1)),
 	);
 	const hl = parseHighlight(highlightCell);
@@ -158,7 +164,7 @@ export const TableScene: React.FC<
 							rowIndex={0}
 							align={colIndex === 0 ? 'left' : 'center'}
 							highlightColor={colors.accent[1]}
-							dense={dense}
+							tier={tier}
 						/>
 					))}
 				</div>
@@ -198,7 +204,7 @@ export const TableScene: React.FC<
 										align={colIndex === 0 ? 'left' : 'center'}
 										highlighted={cellHighlighted}
 										highlightColor={colors.accent[colIndex % colors.accent.length]}
-										dense={dense}
+										tier={tier}
 									/>
 								);
 							})}
