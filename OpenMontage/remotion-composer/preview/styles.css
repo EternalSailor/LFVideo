@@ -173,6 +173,22 @@ body {
 	font-size: 13px;
 }
 
+.field.check {
+	cursor: pointer;
+	user-select: none;
+	padding: 6px 10px;
+	border: 1px solid #2a3342;
+	border-radius: 8px;
+	background: #161c27;
+}
+
+.field.check input {
+	accent-color: #5b8cff;
+	width: 15px;
+	height: 15px;
+	cursor: pointer;
+}
+
 .stage {
 	flex: 1;
 	min-height: 0;

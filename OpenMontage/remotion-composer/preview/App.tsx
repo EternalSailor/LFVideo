@@ -3,6 +3,7 @@ import {Player} from '@remotion/player';
 import {PALETTES} from '../src/custom-templates/theme/palettes';
 import {type BackgroundVariant} from '../src/custom-templates/background';
 import {SceneComposition} from './SceneComposition';
+import {FinalComposition} from './FinalComposition';
 import {SCENE_BY_FILE, type SceneMeta} from './registry';
 import {SCENE_FILES} from './tree';
 
@@ -33,6 +34,8 @@ export const App: React.FC = () => {
 	);
 	const [themeName, setThemeName] = useState<string>(THEME_NAMES[0]);
 	const [background, setBackground] = useState<BackgroundVariant>('gradient');
+	// 勾选后从「裸场景」切换到 ep02-shots 的「最终效果」（矩阵变换 + 叠加层）。
+	const [finalEffect, setFinalEffect] = useState<boolean>(false);
 
 	const meta: SceneMeta | undefined = SCENE_BY_FILE[selectedFile];
 
@@ -69,7 +72,7 @@ export const App: React.FC = () => {
 		}
 	};
 
-	const inputProps = useMemo(
+	const bareInputProps = useMemo(
 		() =>
 			meta
 				? {
@@ -77,6 +80,21 @@ export const App: React.FC = () => {
 						sceneProps: parsedProps,
 						themeName,
 						background,
+					}
+				: null,
+		[meta, parsedProps, themeName, background],
+	);
+
+	const finalInputProps = useMemo(
+		() =>
+			meta
+				? {
+						sceneType: meta.type,
+						sceneProps: parsedProps,
+						themeName,
+						background,
+						durationInFrames: meta.durationInFrames,
+						fps: FPS,
 					}
 				: null,
 		[meta, parsedProps, themeName, background],
@@ -153,16 +171,44 @@ export const App: React.FC = () => {
 								))}
 							</select>
 						</label>
+						<label
+							className="field check"
+							title="勾选后叠加 ep02-shots 成片效果：透视矩阵 + 数字人 + 调色"
+						>
+							<input
+								type="checkbox"
+								checked={finalEffect}
+								onChange={(e) => setFinalEffect(e.target.checked)}
+							/>
+							<span>最终效果</span>
+						</label>
 					</div>
 				</header>
 
 				<section className="stage">
-					{meta && inputProps ? (
+					{meta && finalEffect && finalInputProps ? (
+						<div className="player-wrap">
+							<Player
+								key={`final-${selectedFile}-${meta.durationInFrames}`}
+								component={FinalComposition}
+								inputProps={finalInputProps}
+								durationInFrames={meta.durationInFrames}
+								fps={FPS}
+								compositionWidth={WIDTH}
+								compositionHeight={HEIGHT}
+								style={{width: '100%', height: '100%'}}
+								controls
+								loop
+								autoPlay
+								acknowledgeRemotionLicense
+							/>
+						</div>
+					) : meta && bareInputProps ? (
 						<div className="player-wrap">
 							<Player
 								key={`${selectedFile}-${meta.durationInFrames}`}
 								component={SceneComposition}
-								inputProps={inputProps}
+								inputProps={bareInputProps}
 								durationInFrames={meta.durationInFrames}
 								fps={FPS}
 								compositionWidth={WIDTH}
