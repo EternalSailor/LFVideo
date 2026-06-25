@@ -860,7 +860,7 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
   const screen = unityBackground;
   const warp = !!(screen?.enabled && screen.image && screen.screenQuad);
   // Backdrop translucency + tint for the warped UI (holographic look).
-  const screenOpacity = screen?.screenOpacity ?? 0.4;
+  const screenOpacity = screen?.screenOpacity ?? 0.15;
   const screenTint = screen?.screenTint ?? "#0b2a52";
 
   // Warp-reveal: when warpRevealFrames > 0, the whole UI plane flies from a
@@ -877,11 +877,10 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
       : animatedQuadMatrix3d(width, height, screen!.screenQuad!, warpProgress)
     : "";
 
-  // The screen's own backdrop (warped together with the UI). The background is
-  // now a single independent, theme-driven layer; all template scenes render
-  // fully transparent on top of it.
-  const bgVariant = (props.background as BackgroundVariant) || "gradient";
-  const bgGradient = <Background variant={bgVariant} />;
+  // The background variant is derived from the current cut, or falls back to props.background
+  const currentCut = cuts.find(c => (c.out_seconds || 0) * fps >= frame) || cuts[0];
+  const bgVariant = (currentCut?.background || props.background as BackgroundVariant) || "gradient";
+  const bgGradient = <Background variant={bgVariant as BackgroundVariant} />;
 
   // UI content shown ON the screen — scenes + overlays + grade. No host, no
   // captions, no page backdrop (that is `bgGradient`).
@@ -1033,43 +1032,43 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
   if (warp) {
     return (
       <TemplateThemeProvider theme={templateTheme}>
-      <AbsoluteFill style={{ background: "#000", fontFamily: theme.headingFont || fontFamily }}>
-        <Img
-          src={resolveAsset(screen!.image!)}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width,
-            height,
-            transformOrigin: "0 0",
-            transform: warpTransform,
-            backfaceVisibility: "hidden",
-          }}
-        >
-          <AbsoluteFill
-            style={{ background: hexToRgba(screenTint, screenOpacity), overflow: "hidden" }}
+        <AbsoluteFill style={{ background: "#000", fontFamily: theme.headingFont || fontFamily }}>
+          <Img
+            src={resolveAsset(screen!.image!)}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            from={-2417} />
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width,
+              height,
+              transformOrigin: "0 0",
+              transform: warpTransform,
+              backfaceVisibility: "hidden",
+            }}
           >
-            <AbsoluteFill style={{ opacity: screenOpacity }}>{bgGradient}</AbsoluteFill>
-            {/* Holographic blue wash over the backdrop (below the UI content). */}
             <AbsoluteFill
-              style={{
-                pointerEvents: "none",
-                background:
-                  "radial-gradient(ellipse 95% 85% at 50% 42%, rgba(70,170,240,0.40) 0%, rgba(20,90,180,0.34) 55%, rgba(8,30,72,0.40) 100%)",
-                mixBlendMode: "screen",
-              }}
-            />
-            {screenContent}
-          </AbsoluteFill>
-        </div>
-        {hostEl}
-        {captionsEl}
-        {audioEls}
-      </AbsoluteFill>
+              style={{ background: hexToRgba(screenTint, screenOpacity), overflow: "hidden" }}
+            >
+              <AbsoluteFill style={{ opacity: screenOpacity }}>{bgGradient}</AbsoluteFill>
+              {/* Holographic blue wash over the backdrop (below the UI content). */}
+              <AbsoluteFill
+                style={{
+                  pointerEvents: "none",
+                  background:
+                    "radial-gradient(ellipse 95% 85% at 50% 42%, rgba(70,170,240,0.40) 0%, rgba(20,90,180,0.34) 55%, rgba(8,30,72,0.40) 100%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+              {screenContent}
+            </AbsoluteFill>
+          </div>
+          {hostEl}
+          {captionsEl}
+          {audioEls}
+        </AbsoluteFill>
       </TemplateThemeProvider>
     );
   }

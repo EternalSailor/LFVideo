@@ -9,7 +9,7 @@
       "out_seconds": 10.5,
       "title": "用 Vibe Coding 搭一套自动出片的渲染引擎",
       "subtitle": "把视频写成代码，让 AI 按配置自动出片",
-      "background": "holo"
+      "background": "video"
     },
     {
       "id": "shot-1.2",
@@ -19,7 +19,7 @@
       "out_seconds": 28.2,
       "title": "AI 强在啃文本和代码 → 渲染就该数据驱动",
       "subtitle": "没前后端基础，全程用大白话指挥 AI",
-      "background": "holo"
+      "background": "video"
     },
     {
       "id": "shot-1.3",
@@ -29,7 +29,7 @@
       "out_seconds": 35.2,
       "title": "三步：找路径 · 选型 · 落地",
       "subtitle": "让 AI 找路 → 对约束选型 → 落地出片",
-      "background": "holo"
+      "background": "video"
     },
     {
       "id": "shot-2.1",
@@ -39,7 +39,7 @@
       "out_seconds": 46.167,
       "eyebrow": "找技术路径",
       "title": "把选择题丢给 AI：有哪些现成路子？",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "NOT",
@@ -63,7 +63,7 @@
       "out_seconds": 58.3,
       "eyebrow": "六条路线",
       "title": "AI 一口气摆了六条",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "WEB",
@@ -93,7 +93,7 @@
       "out_seconds": 67.967,
       "eyebrow": "同一个内核",
       "title": "代码描述画面 → 编译成帧 → 合成视频",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "DESC",
@@ -123,7 +123,7 @@
       "out_seconds": 71.067,
       "eyebrow": "本步小结",
       "title": "这一步只摆路，先不评好坏",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "LIST",
@@ -311,7 +311,7 @@
       "out_seconds": 158.3,
       "eyebrow": "引擎怎么干活",
       "title": "一份配置 → Explainer 按 type 分发 → 现成组件",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "WRITE",
@@ -341,7 +341,7 @@
       "out_seconds": 180.467,
       "eyebrow": "remotion-composer",
       "title": "做内容 = 挑组件 + 填字段",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "comparison",
@@ -461,7 +461,7 @@
       "out_seconds": 222.933,
       "eyebrow": "延伸",
       "title": "还能扩一套自有风格组件库",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "BRAND",
@@ -547,7 +547,7 @@
       "out_seconds": 267.733,
       "eyebrow": "Vibe Coding 精髓",
       "title": "重复的规矩，固化成规则交给 AI",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "RULE",
@@ -571,7 +571,7 @@
       "out_seconds": 279.433,
       "eyebrow": "数字人选型",
       "title": "出镜形象只是陪衬串场，不是主角",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "METHOD",
@@ -660,7 +660,7 @@
       "out_seconds": 325.167,
       "eyebrow": "落地交给 AI",
       "title": "整体渲一次按场景裁，脚踩稳",
-      "background": "holo",
+      "background": "video",
       "items": [
         {
           "label": "CROP",
@@ -684,7 +684,7 @@
       "out_seconds": 345.533,
       "headline": "三步搭好你的自动出片引擎，没基础也能复制",
       "cta": "找路径 · 选型 · 落地",
-      "background": "holo"
+      "background": "video"
     },
     {
       "id": "shot-7.2",
@@ -694,7 +694,7 @@
       "out_seconds": 353.533,
       "headline": "下期 EP03：用 Whisper 让字幕踩着话音跳",
       "cta": "关注 · 别错过",
-      "background": "holo"
+      "background": "video"
     }
   ],
   "overlays": [],
@@ -1533,7 +1533,7 @@
         919
       ]
     },
-    "screenOpacity": 0.4,
+    "screenOpacity": 0.15,
     "screenTint": "#0b2a52"
   },
   "audio": {

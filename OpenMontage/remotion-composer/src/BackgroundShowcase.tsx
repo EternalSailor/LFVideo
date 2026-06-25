@@ -1,16 +1,10 @@
 import React from 'react';
 import {AbsoluteFill, Sequence} from 'remotion';
 import {Background, HOLOGRAPHIC} from './custom-templates/background/Background';
-import {
-	Beams,
-	Threads,
-	RetroGrid,
-	Scanlines,
-} from './custom-templates/background/holographicEffects';
 
 // 背景特效目录（catalog）合成：把当前所有背景特效逐个铺开，每个展示 5 秒，
 // 并在画面上写明调用方式。仅用于在 Studio 里查阅 / 出片演示，不参与 ep02 渲染。
-// 想新增一个特效：在 holographicEffects.tsx 写好组件后，往 DEMOS 里加一项即可。
+// 想新增一个背景：在 Background.tsx 写好 variant 后，往 DEMOS 里加一项即可。
 
 export const SEGMENT_FRAMES = 150; // 5s @ 30fps
 
@@ -54,46 +48,11 @@ const DEMOS: Demo[] = [
 		render: () => <Background variant="particles" />,
 	},
 	{
-		id: 'holo',
-		kind: 'variant',
-		note: '全息满配：网格地板 + 光束 + 丝线 + 扫描线',
-		usage: '<Background variant="holo" />',
-		render: () => <Background variant="holo" />,
-	},
-	{
 		id: 'video',
 		kind: 'variant',
 		note: '随机轮播背景视频（灰度→透明 + 交叉淡入淡出）· 视频放 public/video-background/',
 		usage: '<Background variant="video" />',
 		render: () => <Background variant="video" />,
-	},
-	{
-		id: 'Beams',
-		kind: 'effect',
-		note: '斜向光束：缓慢飘移与明灭',
-		usage: '<Beams colors={HOLOGRAPHIC} count={6} />',
-		render: () => onBase(<Beams colors={HOLOGRAPHIC} />),
-	},
-	{
-		id: 'Threads',
-		kind: 'effect',
-		note: '流动丝线：水平正弦曲线随帧推进',
-		usage: '<Threads colors={HOLOGRAPHIC} count={5} />',
-		render: () => onBase(<Threads colors={HOLOGRAPHIC} />),
-	},
-	{
-		id: 'RetroGrid',
-		kind: 'effect',
-		note: '透视全息地板 + 地平辉光，向地平线推进',
-		usage: '<RetroGrid colors={HOLOGRAPHIC} speed={0.8} />',
-		render: () => onBase(<RetroGrid colors={HOLOGRAPHIC} />),
-	},
-	{
-		id: 'Scanlines',
-		kind: 'effect',
-		note: 'CRT 扫描线 + 缓慢竖向扫掠',
-		usage: '<Scanlines colors={HOLOGRAPHIC} />',
-		render: () => onBase(<Scanlines colors={HOLOGRAPHIC} />),
 	},
 ];
 
