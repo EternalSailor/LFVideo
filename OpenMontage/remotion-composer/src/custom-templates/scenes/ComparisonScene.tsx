@@ -1,7 +1,6 @@
 import React from 'react';
-import {useVideoConfig} from 'remotion';
 import {z} from 'zod';
-import {AutoFit, SplitLayout} from '../primitives';
+import {AutoFit} from '../primitives';
 import {useTheme} from '../theme/ThemeContext';
 import {withAlpha} from '../theme/util';
 import {Animated} from '../animation';
@@ -34,10 +33,11 @@ const Card: React.FC<{
 	const cardBg = withAlpha(colors.bg.to, 0.5);
 
 	return (
-		<Animated enter={enter} delay={delay} distance={50} style={{height: '100%'}}>
+		<Animated enter={enter} delay={delay} distance={50} style={{flex: 1, display: 'flex'}}>
 		<div
 			style={{
-				height: '100%',
+				flex: 1,
+				minHeight: 440,
 				display: 'flex',
 				flexDirection: 'column',
 				justifyContent: 'center',
@@ -104,23 +104,26 @@ export const ComparisonScene: React.FC<ComparisonProps> = ({
 	rightValue,
 	enter = 'rise-pop',
 }) => {
-	const {colors, fonts} = useTheme();
-	const {width, height} = useVideoConfig();
+	const {colors, fonts, SPACING} = useTheme();
 
 	return (
-		<AutoFit>
+		<AutoFit
+			paddingX={SPACING.gutter}
+			paddingY={SPACING.xl}
+			maxScale={1.7}
+			widthMode="content"
+		>
 			<div
 				style={{
 					fontFamily: fonts.family,
-					position: 'relative',
-					width,
-					height,
+					display: 'flex',
+					alignItems: 'stretch',
+					gap: SPACING.lg,
+					width: 1180,
 				}}
 			>
-				<SplitLayout
-					left={<Card label={leftLabel} value={leftValue} color={colors.accent[0]} delay={15} enter={enter} />}
-					right={<Card label={rightLabel} value={rightValue} color={colors.accent[2] ?? colors.accent[1]} delay={25} enter={enter} />}
-				/>
+				<Card label={leftLabel} value={leftValue} color={colors.accent[0]} delay={15} enter={enter} />
+				<Card label={rightLabel} value={rightValue} color={colors.accent[2] ?? colors.accent[1]} delay={25} enter={enter} />
 			</div>
 		</AutoFit>
 	);

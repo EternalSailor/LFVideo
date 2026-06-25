@@ -6,10 +6,15 @@ interface Props {
 	// 安全边距（基于满帧设计稿）。内容会被缩放到 (宽-2*paddingX, 高-2*paddingY) 内。
 	paddingX?: number;
 	paddingY?: number;
-	// 允许的最大缩放，默认 1（只缩小不放大）。
+	// 允许的最大缩放。默认 1（只缩小不放大）。
+	// 设为 >1 时启用「内容少则放大撑满」（fit-to-fill），上限即此值。
 	maxScale?: number;
 	// 内容在垂直方向的对齐方式（内容比安全区矮时）。
 	align?: 'center' | 'flex-start' | 'flex-end';
+	// 内容宽度策略：
+	// 'fill'（默认）= 内容拉满安全区宽（适合整宽堆叠的卡片列，如 Concept）；
+	// 'content' = 内容按自身自然宽度排布，再由缩放整体撑满/收缩（适合 Comparison/Table）。
+	widthMode?: 'fill' | 'content';
 }
 
 /**
@@ -25,6 +30,7 @@ export const AutoFit: React.FC<Props> = ({
 	paddingY = 0,
 	maxScale = 1,
 	align = 'center',
+	widthMode = 'fill',
 }) => {
 	const {width, height} = useVideoConfig();
 	const innerRef = useRef<HTMLDivElement>(null);
@@ -61,7 +67,8 @@ export const AutoFit: React.FC<Props> = ({
 			<div
 				ref={innerRef}
 				style={{
-					width: availW,
+					width: widthMode === 'fill' ? availW : 'auto',
+					maxWidth: widthMode === 'content' ? availW : undefined,
 					display: 'flex',
 					flexDirection: 'column',
 					justifyContent: align,

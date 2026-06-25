@@ -101,10 +101,18 @@ export const TableScene: React.FC<
 	TableProps & {startFrame?: number; rowStagger?: number}
 > = ({headers, rows, highlightCell, startFrame = 25, rowStagger = 15, enter = 'rise'}) => {
 	const frame = useCurrentFrame();
-	const {fps} = useVideoConfig();
+	const {fps, height} = useVideoConfig();
 	const {colors, fonts, SPACING, RADIUS, SPRING} = useTheme();
 
 	const dense = rows.length > 4;
+
+	// 行高随行数自适应：行少时把行撑高，填满竖向安全区；行多时收紧（仍由 AutoFit 兜底缩放）。
+	// 这样无论几行，表格都占满约 90% 的竖向安全区，而不是挤在中间留大片空白。
+	const availH = height - SPACING.xl * 2;
+	const rowMinHeight = Math.max(
+		56,
+		Math.min(190, (availH * 0.9) / (rows.length + 1)),
+	);
 	const hl = parseHighlight(highlightCell);
 	const highlightActive = frame > 110;
 
@@ -128,12 +136,12 @@ export const TableScene: React.FC<
 					backdropFilter: 'blur(16px)',
 					boxShadow: '0 20px 50px -10px rgba(0, 0, 0, 0.7)',
 					overflow: 'hidden',
-					marginTop: dense ? SPACING.lg : SPACING.xl,
 				}}
 			>
 				<div
 					style={{
 						display: 'flex',
+						minHeight: rowMinHeight,
 						background: headerRowBg,
 						borderBottom: `2px solid ${colors.line}`,
 						opacity: headerOpacity,
@@ -166,6 +174,7 @@ export const TableScene: React.FC<
 							distance={30}
 							style={{
 								display: 'flex',
+								minHeight: rowMinHeight,
 								borderBottom:
 									rowIndex === rows.length - 1
 										? 'none'

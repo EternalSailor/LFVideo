@@ -44,7 +44,7 @@ const ItemCard: React.FC<{
 	const iconTransform = `translateY(${-6 * floatW}px) rotate(${4 * floatW}deg)`;
 
 	return (
-		<Animated enter={enter} delay={delay} distance={60} style={{marginBottom: SPACING.md}}>
+		<Animated enter={enter} delay={delay} distance={60}>
 		<div
 			style={{
 				display: 'flex',
@@ -137,13 +137,20 @@ export const ConceptScene: React.FC<
 	ConceptProps & {cardStart?: number; cardStagger?: number}
 > = ({items, cardStart = 20, cardStagger = 25, enter = 'rise-pop'}) => {
 	const {colors, fonts, SPACING} = useTheme();
+
+	// 密度分档：条目多时换多列排布，而不是被 AutoFit 一味等比缩小到字很小。
+	// ≤4 条：单列；5–9 条：双列；>9 条：三列。
+	const columns = items.length <= 4 ? 1 : items.length <= 9 ? 2 : 3;
+
 	return (
 		<AutoFit paddingX={SPACING.gutter} paddingY={SPACING.xl}>
 			<div
 				style={{
 					fontFamily: fonts.family,
-					display: 'flex',
-					flexDirection: 'column',
+					display: 'grid',
+					gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+					alignItems: 'start',
+					gap: SPACING.md,
 				}}
 			>
 				{items.map((item, i) => (
@@ -154,7 +161,7 @@ export const ConceptScene: React.FC<
 						delay={cardStart + i * cardStagger}
 						index={i}
 						enter={enter}
-					/>
+				/>
 				))}
 			</div>
 		</AutoFit>
