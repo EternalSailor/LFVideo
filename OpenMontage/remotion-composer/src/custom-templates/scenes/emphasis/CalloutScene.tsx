@@ -4,6 +4,8 @@ import {z} from 'zod';
 import {AutoFit} from '../../primitives';
 import {useTheme} from '../../theme/ThemeContext';
 import {withAlpha} from '../../theme/util';
+import {TechPanel} from '../../theme/surfaces';
+import {textStyles} from '../../theme/textStyles';
 import {Animated} from '../../animation';
 import {osc01} from '../../animation/presence';
 import {TRANSITION_IDS, type TransitionId} from '../../animation/types';
@@ -37,7 +39,9 @@ export const CalloutScene: React.FC<CalloutProps> = ({
 }) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
-	const {colors, fonts, FONT_SIZE, SPACING, RADIUS} = useTheme();
+	const theme = useTheme();
+	const {colors, fonts, FONT_SIZE, SPACING} = theme;
+	const t = textStyles(theme);
 
 	const meta = KIND_META[callout_type];
 	const color = colors.accent[meta.accent] ?? colors.accent[0];
@@ -45,27 +49,23 @@ export const CalloutScene: React.FC<CalloutProps> = ({
 
 	// frame 驱动的常驻辉光（替代 CSS infinite 动画）。
 	const glow = osc01(frame, fps, 6);
-	const cardBg = withAlpha(colors.bg.to, 0.5);
-	const cardShadow = `0 20px 50px -15px rgba(0,0,0,${0.5 + 0.15 * glow}), 0 0 ${24 * glow}px ${withAlpha(color, 0.12 * glow)}`;
 
 	return (
 		<AutoFit paddingX={SPACING.gutter} paddingY={SPACING.xl} maxScale={1.3}>
 			<Animated enter={enter} delay={6} distance={70}>
-				<div
+				<TechPanel
+					accent={color}
+					glow={glow}
+					borderAlpha={0.4}
+					fill={0.5}
+					blur={16}
 					style={{
-						position: 'relative',
 						fontFamily: fonts.family,
 						display: 'flex',
 						alignItems: 'flex-start',
 						gap: SPACING.lg,
 						width: 1320,
-						background: cardBg,
-						border: `1.5px solid ${withAlpha(color, 0.4)}`,
-						borderRadius: RADIUS.lg,
 						padding: `${SPACING.xl}px ${SPACING.xl}px`,
-						backdropFilter: 'blur(16px)',
-						boxShadow: cardShadow,
-						overflow: 'hidden',
 					}}
 				>
 					<div
@@ -93,25 +93,14 @@ export const CalloutScene: React.FC<CalloutProps> = ({
 					</div>
 					<div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: SPACING.sm}}>
 						{title && (
-							<div
-								style={{
-									fontSize: FONT_SIZE.subtitle,
-									fontWeight: 800,
-									color,
-									lineHeight: 1.3,
-									letterSpacing: -0.5,
-								}}
-							>
-								{title}
-							</div>
+							<div style={{...t.cardTitle, color}}>{title}</div>
 						)}
 						<div
 							style={{
+								...t.body,
 								fontSize: FONT_SIZE.bodyLg,
 								fontWeight: isQuote ? 500 : 400,
 								fontStyle: isQuote ? 'italic' : 'normal',
-								color: colors.text.primary,
-								lineHeight: 1.6,
 							}}
 						>
 							{text}
@@ -125,9 +114,7 @@ export const CalloutScene: React.FC<CalloutProps> = ({
 												display: 'flex',
 												alignItems: 'flex-start',
 												gap: SPACING.sm,
-												fontSize: FONT_SIZE.body,
-												color: colors.text.secondary,
-												lineHeight: 1.6,
+												...t.bodyMuted,
 											}}
 										>
 											<span style={{color, fontWeight: 900, flexShrink: 0}}>›</span>
@@ -138,7 +125,7 @@ export const CalloutScene: React.FC<CalloutProps> = ({
 							</div>
 						)}
 					</div>
-				</div>
+				</TechPanel>
 			</Animated>
 		</AutoFit>
 	);

@@ -9,6 +9,8 @@ import {
 import {z} from 'zod';
 import {useTheme} from '../../theme/ThemeContext';
 import {withAlpha} from '../../theme/util';
+import {glowBlob} from '../../theme/surfaces';
+import {textStyles} from '../../theme/textStyles';
 
 export const quoteSchema = z.object({
 	text: z.string(),
@@ -20,7 +22,9 @@ export type QuoteProps = z.infer<typeof quoteSchema>;
 export const QuoteScene: React.FC<QuoteProps> = ({text, attribution}) => {
 	const frame = useCurrentFrame();
 	const {fps, durationInFrames} = useVideoConfig();
-	const {colors, fonts, FONT_SIZE, SPACING} = useTheme();
+	const theme = useTheme();
+	const {colors, fonts, FONT_SIZE, SPACING} = theme;
+	const t = textStyles(theme);
 
 	const color = colors.accent[0];
 	const enter = spring({fps, frame, config: {damping: 20, stiffness: 90}});
@@ -49,18 +53,7 @@ export const QuoteScene: React.FC<QuoteProps> = ({text, attribution}) => {
 				opacity: opacity * fadeOut,
 			}}
 		>
-			<div
-				style={{
-					position: 'absolute',
-					width: 760,
-					height: 360,
-					borderRadius: '50%',
-					background: `radial-gradient(circle, ${withAlpha(color, 0.16)} 0%, transparent 70%)`,
-					filter: 'blur(90px)',
-					zIndex: 0,
-					pointerEvents: 'none',
-				}}
-			/>
+			<div style={glowBlob(color, {width: 760, height: 360, blur: 90})} />
 			<div
 				style={{
 					fontFamily: 'Georgia, serif',
@@ -77,12 +70,10 @@ export const QuoteScene: React.FC<QuoteProps> = ({text, attribution}) => {
 			</div>
 			<div
 				style={{
-					fontSize: big ? FONT_SIZE.display : FONT_SIZE.title,
+					...(big ? t.displayTitle : t.sceneTitle),
 					fontWeight: 800,
-					color: colors.text.primary,
 					maxWidth: 1500,
 					lineHeight: 1.3,
-					letterSpacing: -1,
 					transform: `translateY(${translateY}px)`,
 					zIndex: 1,
 				}}
@@ -103,8 +94,8 @@ export const QuoteScene: React.FC<QuoteProps> = ({text, attribution}) => {
 					<div style={{width: 48, height: 2, background: color}} />
 					<div
 						style={{
+							...t.bodyMuted,
 							fontSize: FONT_SIZE.subtitle,
-							color: colors.text.secondary,
 							fontWeight: 600,
 							letterSpacing: 1,
 						}}

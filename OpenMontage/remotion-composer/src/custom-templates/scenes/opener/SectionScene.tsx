@@ -8,7 +8,8 @@ import {
 } from 'remotion';
 import {z} from 'zod';
 import {useTheme} from '../../theme/ThemeContext';
-import {withAlpha} from '../../theme/util';
+import {glowBlob, accentGradientText} from '../../theme/surfaces';
+import {textStyles} from '../../theme/textStyles';
 
 export const sectionSchema = z.object({
 	title: z.string(),
@@ -21,7 +22,9 @@ export type SectionProps = z.infer<typeof sectionSchema>;
 export const SectionScene: React.FC<SectionProps> = ({title, index, eyebrow}) => {
 	const frame = useCurrentFrame();
 	const {fps, durationInFrames} = useVideoConfig();
-	const {colors, fonts, FONT_SIZE, SPACING} = useTheme();
+	const theme = useTheme();
+	const {colors, fonts, FONT_SIZE, SPACING} = theme;
+	const t = textStyles(theme);
 
 	const color = colors.accent[0];
 	const enter = spring({fps, frame, config: {damping: 20, stiffness: 90}});
@@ -47,18 +50,7 @@ export const SectionScene: React.FC<SectionProps> = ({title, index, eyebrow}) =>
 				opacity: opacity * fadeOut,
 			}}
 		>
-			<div
-				style={{
-					position: 'absolute',
-					width: 800,
-					height: 400,
-					borderRadius: '50%',
-					background: `radial-gradient(circle, ${withAlpha(color, 0.14)} 0%, transparent 70%)`,
-					filter: 'blur(90px)',
-					zIndex: 0,
-					pointerEvents: 'none',
-				}}
-			/>
+			<div style={glowBlob(color, {width: 800, height: 400, intensity: 0.14, blur: 90})} />
 			{eyebrow && (
 				<div
 					style={{
@@ -83,9 +75,7 @@ export const SectionScene: React.FC<SectionProps> = ({title, index, eyebrow}) =>
 						lineHeight: 0.9,
 						letterSpacing: -6,
 						transform: `scale(${indexScale})`,
-						background: `linear-gradient(135deg, ${colors.accent[0]} 0%, ${colors.accent[1]} 100%)`,
-						WebkitBackgroundClip: 'text',
-						WebkitTextFillColor: 'transparent',
+						...accentGradientText(theme),
 						zIndex: 1,
 					}}
 				>
@@ -104,12 +94,8 @@ export const SectionScene: React.FC<SectionProps> = ({title, index, eyebrow}) =>
 			/>
 			<div
 				style={{
-					fontSize: FONT_SIZE.display,
-					fontWeight: 900,
-					color: colors.text.primary,
+					...t.displayTitle,
 					maxWidth: 1500,
-					lineHeight: 1.2,
-					letterSpacing: -1,
 					opacity: titleProgress,
 					transform: `translateY(${interpolate(titleProgress, [0, 1], [24, 0])}px)`,
 					zIndex: 1,

@@ -8,7 +8,8 @@ import {
 } from 'remotion';
 import {z} from 'zod';
 import {useTheme} from '../../theme/ThemeContext';
-import {withAlpha} from '../../theme/util';
+import {glowBlob, accentGradientText} from '../../theme/surfaces';
+import {textStyles} from '../../theme/textStyles';
 
 export const statSchema = z.object({
 	stat: z.string(),
@@ -21,7 +22,9 @@ export type StatProps = z.infer<typeof statSchema>;
 export const StatScene: React.FC<StatProps> = ({stat, subtitle, label}) => {
 	const frame = useCurrentFrame();
 	const {fps, durationInFrames} = useVideoConfig();
-	const {colors, fonts, FONT_SIZE, SPACING} = useTheme();
+	const theme = useTheme();
+	const {colors, fonts, FONT_SIZE, SPACING} = theme;
+	const t = textStyles(theme);
 
 	const color = colors.accent[0];
 
@@ -44,18 +47,7 @@ export const StatScene: React.FC<StatProps> = ({stat, subtitle, label}) => {
 				opacity: fadeOut,
 			}}
 		>
-			<div
-				style={{
-					position: 'absolute',
-					width: 700,
-					height: 320,
-					borderRadius: '50%',
-					background: `radial-gradient(circle, ${withAlpha(color, 0.18)} 0%, transparent 70%)`,
-					filter: 'blur(80px)',
-					zIndex: 0,
-					pointerEvents: 'none',
-				}}
-			/>
+			<div style={glowBlob(color, {width: 700, height: 320, intensity: 0.18})} />
 			{label && (
 				<div
 					style={{
@@ -79,9 +71,7 @@ export const StatScene: React.FC<StatProps> = ({stat, subtitle, label}) => {
 					fontWeight: 900,
 					lineHeight: 1,
 					letterSpacing: -4,
-					background: `linear-gradient(135deg, ${colors.accent[0]} 0%, ${colors.accent[1]} 100%)`,
-					WebkitBackgroundClip: 'text',
-					WebkitTextFillColor: 'transparent',
+					...accentGradientText(theme),
 					zIndex: 1,
 				}}
 			>
@@ -90,8 +80,8 @@ export const StatScene: React.FC<StatProps> = ({stat, subtitle, label}) => {
 			{subtitle && (
 				<div
 					style={{
+						...t.body,
 						fontSize: FONT_SIZE.subtitle,
-						color: colors.text.primary,
 						fontWeight: 600,
 						marginTop: SPACING.lg,
 						maxWidth: 1200,

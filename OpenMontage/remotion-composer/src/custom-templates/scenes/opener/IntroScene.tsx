@@ -8,6 +8,8 @@ import {
 } from 'remotion';
 import {z} from 'zod';
 import {useTheme} from '../../theme/ThemeContext';
+import {glowBlob} from '../../theme/surfaces';
+import {textStyles} from '../../theme/textStyles';
 
 export const introSchema = z.object({
 	title: z.string(),
@@ -18,7 +20,9 @@ export type IntroProps = z.infer<typeof introSchema>;
 export const IntroScene: React.FC<IntroProps> = ({title, subtitle}) => {
 	const frame = useCurrentFrame();
 	const {fps, durationInFrames} = useVideoConfig();
-	const {colors, fonts, FONT_SIZE, SPACING} = useTheme();
+	const theme = useTheme();
+	const {colors, fonts, FONT_SIZE, SPACING} = theme;
+	const t = textStyles(theme);
 
 	const enter = spring({fps, frame, config: {damping: 20, stiffness: 90}});
 	const opacity = interpolate(enter, [0, 1], [0, 1]);
@@ -53,18 +57,7 @@ export const IntroScene: React.FC<IntroProps> = ({title, subtitle}) => {
 				transform: `scale(${scale})`,
 			}}
 		>
-			<div
-				style={{
-					position: 'absolute',
-					width: 600,
-					height: 250,
-					borderRadius: '50%',
-					background: `radial-gradient(circle, ${colors.accent[0]}1F 0%, transparent 70%)`,
-					filter: 'blur(80px)',
-					zIndex: 0,
-					pointerEvents: 'none',
-				}}
-			/>
+			<div style={glowBlob(colors.accent[0], {width: 600, height: 250, intensity: 0.12})} />
 
 			<div
 				style={{
@@ -88,8 +81,8 @@ export const IntroScene: React.FC<IntroProps> = ({title, subtitle}) => {
 			{subtitle && (
 				<div
 					style={{
+						...t.bodyMuted,
 						fontSize: FONT_SIZE.subtitle,
-						color: colors.text.secondary,
 						fontWeight: 600,
 						letterSpacing: 2,
 						textTransform: 'uppercase',
