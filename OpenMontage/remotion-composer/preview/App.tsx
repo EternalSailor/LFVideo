@@ -38,15 +38,10 @@ export const App: React.FC = () => {
 	// 勾选后从「裸场景」切换到 ep02-shots 的「最终效果」（矩阵变换 + 叠加层）。
 	const [finalEffect, setFinalEffect] = useState<boolean>(false);
 
+	// 用 ref 显式控制播放：切换场景/主题/背景/最终效果时回到第 0 帧并重新播放。
+	// 不依赖 Player 的 autoPlay——后者在 StrictMode 下会因双重挂载导致
+	//「按钮显示播放但实际停住、需手动暂停再播」的状态脱节问题。
 	const playerRef = useRef<PlayerRef>(null);
-
-	// 切换场景 / 主题 / 背景 / 最终效果时自动从头重播。
-	useEffect(() => {
-		const p = playerRef.current;
-		if (!p) return;
-		p.seekTo(0);
-		p.play();
-	}, [selectedFile, themeName, background, finalEffect]);
 
 	const meta: SceneMeta | undefined = SCENE_BY_FILE[selectedFile];
 
@@ -111,6 +106,19 @@ export const App: React.FC = () => {
 				: null,
 		[meta, parsedProps, themeName, background],
 	);
+
+	// 任意控件切换后：等 Player 完成挂载，再回到首帧并播放。
+	// rAF 确保在新 Player 就绪后调用，play() 包裹 catch 以吞掉浏览器自动播放策略的拒绝。
+	useEffect(() => {
+		const id = requestAnimationFrame(() => {
+			const p = playerRef.current;
+			if (!p) return;
+			p.seekTo(0);
+			const maybe = p.play() as unknown as Promise<void> | undefined;
+			if (maybe && typeof maybe.catch === 'function') maybe.catch(() => {});
+		});
+		return () => cancelAnimationFrame(id);
+	}, [selectedFile, themeName, background, finalEffect, meta]);
 
 	return (
 		<div className="app">
@@ -202,7 +210,7 @@ export const App: React.FC = () => {
 						<div className="player-wrap">
 							<Player
 								ref={playerRef}
-								key={`final-${selectedFile}-${meta.durationInFrames}-${themeName}-${background}`}
+								key={`final-${selectedFile}-${meta.durationInFrames}`}
 								component={FinalComposition}
 								inputProps={finalInputProps}
 								durationInFrames={meta.durationInFrames}
@@ -212,7 +220,6 @@ export const App: React.FC = () => {
 								style={{width: '100%', height: '100%'}}
 								controls
 								loop
-								autoPlay
 								acknowledgeRemotionLicense
 							/>
 						</div>
@@ -220,7 +227,7 @@ export const App: React.FC = () => {
 						<div className="player-wrap">
 							<Player
 								ref={playerRef}
-								key={`${selectedFile}-${meta.durationInFrames}-${themeName}-${background}`}
+								key={`${selectedFile}-${meta.durationInFrames}`}
 								component={SceneComposition}
 								inputProps={bareInputProps}
 								durationInFrames={meta.durationInFrames}
@@ -230,7 +237,6 @@ export const App: React.FC = () => {
 								style={{width: '100%', height: '100%'}}
 								controls
 								loop
-								autoPlay
 								acknowledgeRemotionLicense
 							/>
 						</div>
