@@ -1,10 +1,10 @@
 import React from 'react';
 import {z} from 'zod';
-import {AutoFit} from '../primitives';
-import {useTheme} from '../theme/ThemeContext';
-import {withAlpha} from '../theme/util';
-import {Animated} from '../animation';
-import {TRANSITION_IDS, type TransitionId} from '../animation/types';
+import {AutoFit} from '../../primitives';
+import {useTheme} from '../../theme/ThemeContext';
+import {withAlpha} from '../../theme/util';
+import {Animated} from '../../animation';
+import {TRANSITION_IDS, type TransitionId} from '../../animation/types';
 
 // 模板库版对比场景：基于 SplitLayout，主题驱动配色，左右两张玻璃卡。
 // 与旧 components/ComparisonCard 不同，value 走正文字号并自适应长句，

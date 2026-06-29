@@ -7,8 +7,8 @@ import {
 	useVideoConfig,
 } from 'remotion';
 import {z} from 'zod';
-import {useTheme} from '../theme/ThemeContext';
-import {withAlpha} from '../theme/util';
+import {useTheme} from '../../theme/ThemeContext';
+import {withAlpha} from '../../theme/util';
 
 // 模板库版「合成终端 / 代码」场景：主题驱动配色、等宽字体、全透明外底。
 // 取代旧 components/TerminalScene 的硬编码风格。step 协议保持兼容：

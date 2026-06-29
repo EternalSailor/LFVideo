@@ -7,7 +7,7 @@ import {
 	useVideoConfig,
 } from 'remotion';
 import {z} from 'zod';
-import {useTheme} from '../theme/ThemeContext';
+import {useTheme} from '../../theme/ThemeContext';
 
 export const introSchema = z.object({
 	title: z.string(),

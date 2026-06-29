@@ -7,8 +7,8 @@ import {
 	useVideoConfig,
 } from 'remotion';
 import {z} from 'zod';
-import {useTheme} from '../theme/ThemeContext';
-import {withAlpha} from '../theme/util';
+import {useTheme} from '../../theme/ThemeContext';
+import {withAlpha} from '../../theme/util';
 
 export const outroSchema = z.object({
 	headline: z.string(),

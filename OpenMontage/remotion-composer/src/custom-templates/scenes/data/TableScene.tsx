@@ -6,12 +6,12 @@ import {
 	useVideoConfig,
 } from 'remotion';
 import {z} from 'zod';
-import {AutoFit} from '../primitives';
-import {useTheme} from '../theme/ThemeContext';
-import {withAlpha} from '../theme/util';
-import {Animated} from '../animation';
-import {osc01} from '../animation/presence';
-import {TRANSITION_IDS} from '../animation/types';
+import {AutoFit} from '../../primitives';
+import {useTheme} from '../../theme/ThemeContext';
+import {withAlpha} from '../../theme/util';
+import {Animated} from '../../animation';
+import {osc01} from '../../animation/presence';
+import {TRANSITION_IDS} from '../../animation/types';
 
 // 通用表格：列由 headers 决定，每行是与 headers 对齐的 cells[]（纯字符串）。
 // 不再绑定任何业务字段名。highlightCell 用 "行-列"（均 1 起，行只数数据行）

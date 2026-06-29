@@ -6,12 +6,12 @@ import {
 	useVideoConfig,
 } from 'remotion';
 import {z} from 'zod';
-import {AutoFit} from '../primitives';
-import {useTheme} from '../theme/ThemeContext';
-import {withAlpha} from '../theme/util';
-import {Animated} from '../animation';
-import {osc01} from '../animation/presence';
-import {TRANSITION_IDS, type TransitionId} from '../animation/types';
+import {AutoFit} from '../../primitives';
+import {useTheme} from '../../theme/ThemeContext';
+import {withAlpha} from '../../theme/util';
+import {Animated} from '../../animation';
+import {osc01} from '../../animation/presence';
+import {TRANSITION_IDS, type TransitionId} from '../../animation/types';
 
 export const timelineEventSchema = z.object({
 	year: z.string(),
