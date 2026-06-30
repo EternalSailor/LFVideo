@@ -43,18 +43,23 @@ export const SPRING = {
 	snappy: {damping: 18, stiffness: 120, mass: 0.8},
 } as const;
 
+// ---- 文字阴影（legibility）----
+// 全局文字阴影：所有文字角色（标题/正文/角标…）统一带此暗投影，深底上更清晰、
+// 更有「悬浮」层次。改这里即可全片同步增减；textStyles 的每个角色都 spread 它。
+export const TEXT_SHADOW = '0 2px 10px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.45)';
+
 // ---- 全息辉光（holographic glow）----
 // 「全息投影感」的单一开关：文字 / 描边 / Icon / 强调光条的辉光强度。
 // 改这里即可让全片的辉光同步增减；各场景一律读 useTheme().GLOW，禁止内联辉光。
 export const GLOW = {
 	// 标题文字辉光：accent 色弥散 + 暗色描边保可读。
-	text: {blur: 18, alpha: 0.5},
+	text: {blur: 20, alpha: 0.6},
 	// 元素框（techPanel）描边的「常驻」辉光基线（呼吸辉光在此之上叠加）。
-	border: {blur: 16, alpha: 0.22},
+	border: {blur: 18, alpha: 0.32},
 	// Icon / 序号方片的 accent 辉光。
-	icon: {blur: 18, alpha: 0.3},
+	icon: {blur: 20, alpha: 0.42},
 	// 强调光条（标题下划线 / 分隔条）的 accent 辉光。
-	bar: {blur: 14, alpha: 0.6},
+	bar: {blur: 16, alpha: 0.75},
 	// 标题解码入场时长（帧）。统一所有 HoloTitle 的入场节奏。
 	decodeFrames: 20,
 } as const;

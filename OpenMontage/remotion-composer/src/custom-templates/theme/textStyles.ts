@@ -1,5 +1,6 @@
 import {type CSSProperties} from 'react';
 import {type TemplateTheme} from './ThemeContext';
+import {TEXT_SHADOW} from './tokens';
 
 // ───────────────────────────────────────────────────────────────────────────
 // 文字角色 SSOT：标题 / 卡片标题 / 正文 / 副文 / 角标 / eyebrow。
@@ -34,6 +35,7 @@ export function textStyles(theme: TemplateTheme): TextStyles {
 			color: colors.text.primary,
 			lineHeight: 1.2,
 			letterSpacing: -1,
+			textShadow: TEXT_SHADOW,
 		},
 		sceneTitle: {
 			fontSize: FONT_SIZE.title,
@@ -41,6 +43,7 @@ export function textStyles(theme: TemplateTheme): TextStyles {
 			color: colors.text.primary,
 			lineHeight: 1.2,
 			letterSpacing: -1,
+			textShadow: TEXT_SHADOW,
 		},
 		cardTitle: {
 			fontSize: FONT_SIZE.subtitle,
@@ -48,21 +51,25 @@ export function textStyles(theme: TemplateTheme): TextStyles {
 			color: colors.text.primary,
 			lineHeight: 1.3,
 			letterSpacing: -0.5,
+			textShadow: TEXT_SHADOW,
 		},
 		body: {
 			fontSize: FONT_SIZE.body,
 			color: colors.text.primary,
 			lineHeight: 1.6,
+			textShadow: TEXT_SHADOW,
 		},
 		bodyMuted: {
 			fontSize: FONT_SIZE.body,
 			color: colors.text.secondary,
 			lineHeight: 1.6,
+			textShadow: TEXT_SHADOW,
 		},
 		caption: {
 			fontSize: FONT_SIZE.caption,
 			color: colors.text.muted,
 			lineHeight: 1.4,
+			textShadow: TEXT_SHADOW,
 		},
 		eyebrow: {
 			fontSize: FONT_SIZE.caption,
@@ -70,6 +77,7 @@ export function textStyles(theme: TemplateTheme): TextStyles {
 			letterSpacing: 4,
 			textTransform: 'uppercase',
 			color: colors.accent[0],
+			textShadow: TEXT_SHADOW,
 		},
 	};
 }

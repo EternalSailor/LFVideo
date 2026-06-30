@@ -37,7 +37,7 @@ export const PALETTES: Record<string, Palette> = {
 	'warm-glass': {
 		bg: {from: '#1A1320', to: '#2E2233'},
 		text: {...TECH_TEXT},
-		accent: ['#FFB347', '#FF7EB6', '#7FD8C0', '#C9A6E8'],
+		accent: ['#FFC266', '#FF9ECB', '#9CF0DC', '#DBC2F5'],
 		line: TECH_LINE,
 		surface: TECH_SURFACE,
 		codeBg: '#160E1C',
@@ -45,7 +45,7 @@ export const PALETTES: Record<string, Palette> = {
 	'flat-motion-graphics': {
 		bg: {from: '#0F172A', to: '#1E293B'},
 		text: {...TECH_TEXT},
-		accent: ['#7C3AED', '#EC4899', '#06B6D4', '#F59E0B'],
+		accent: ['#9F67FF', '#FF5FB0', '#22D3EE', '#FBBF24'],
 		line: TECH_LINE,
 		surface: TECH_SURFACE,
 		codeBg: '#0B1120',
@@ -54,7 +54,7 @@ export const PALETTES: Record<string, Palette> = {
 		// 由浅底改为深色专业蓝底，accent 提亮以在深底上保持对比。
 		bg: {from: '#0C1322', to: '#172338'},
 		text: {...TECH_TEXT},
-		accent: ['#3B82F6', '#F59E0B', '#10B981', '#A78BFA'],
+		accent: ['#60A5FA', '#FBBF24', '#34D399', '#C4B5FD'],
 		line: TECH_LINE,
 		surface: TECH_SURFACE,
 		codeBg: '#0B1120',
@@ -63,7 +63,7 @@ export const PALETTES: Record<string, Palette> = {
 		// 由浅底改为深色极简底，原本过暗的 navy/near-black accent 换成亮色。
 		bg: {from: '#0E1118', to: '#1A1F2E'},
 		text: {...TECH_TEXT},
-		accent: ['#E94560', '#4F9DF7', '#E2E8F0', '#9CA3AF'],
+		accent: ['#FF5C77', '#6FB4FF', '#F1F5F9', '#B6BFCC'],
 		line: TECH_LINE,
 		surface: TECH_SURFACE,
 		codeBg: '#11141C',
@@ -71,7 +71,7 @@ export const PALETTES: Record<string, Palette> = {
 	'anime-ghibli': {
 		bg: {from: '#0A0A1A', to: '#1A2332'},
 		text: {...TECH_TEXT},
-		accent: ['#FFB347', '#FF6B9D', '#A8E6CF', '#6B4C8A'],
+		accent: ['#FFC266', '#FF8FB8', '#BFF2DF', '#9B7BC2'],
 		line: TECH_LINE,
 		surface: TECH_SURFACE,
 		codeBg: '#0A0F1A',
