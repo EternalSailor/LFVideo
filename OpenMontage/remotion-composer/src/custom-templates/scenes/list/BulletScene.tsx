@@ -2,7 +2,8 @@ import React from 'react';
 import {z} from 'zod';
 import {AutoFit} from '../../primitives';
 import {useTheme} from '../../theme/ThemeContext';
-import {withAlpha} from '../../theme/util';
+import {TechPanel, techIconChip} from '../../theme/surfaces';
+import {textStyles} from '../../theme/textStyles';
 import {Animated} from '../../animation';
 import {TRANSITION_IDS} from '../../animation/types';
 
@@ -30,7 +31,9 @@ export const BulletScene: React.FC<BulletProps> = ({
 	ordered = false,
 	enter = 'slide-right',
 }) => {
-	const {colors, fonts, FONT_SIZE, SPACING, RADIUS} = useTheme();
+	const theme = useTheme();
+	const {colors, fonts, FONT_SIZE, SPACING, RADIUS} = theme;
+	const t = textStyles(theme);
 
 	// 条目多时收紧字号/间距，而非交给 AutoFit 一味等比缩小。
 	const tier: 0 | 1 = items.length <= 5 ? 0 : 1;
@@ -46,32 +49,14 @@ export const BulletScene: React.FC<BulletProps> = ({
 			<div style={{fontFamily: fonts.family, width: 1300, display: 'flex', flexDirection: 'column'}}>
 				{eyebrow && (
 					<Animated enter="rise" delay={8} distance={24}>
-						<div
-							style={{
-								fontSize: FONT_SIZE.caption,
-								letterSpacing: 4,
-								textTransform: 'uppercase',
-								color: colors.accent[0],
-								fontWeight: 800,
-								marginBottom: SPACING.xs,
-							}}
-						>
+						<div style={{...t.eyebrow, marginBottom: SPACING.xs}}>
 							{eyebrow}
 						</div>
 					</Animated>
 				)}
 				{title && (
 					<Animated enter="rise" delay={10} distance={28}>
-						<div
-							style={{
-								fontSize: FONT_SIZE.title,
-								fontWeight: 900,
-								color: colors.text.primary,
-								marginBottom: SPACING.lg,
-								lineHeight: 1.2,
-								letterSpacing: -1,
-							}}
-						>
+						<div style={{...t.sceneTitle, marginBottom: SPACING.lg}}>
 							{title}
 						</div>
 					</Animated>
@@ -82,29 +67,26 @@ export const BulletScene: React.FC<BulletProps> = ({
 						const color = colors.accent[i % colors.accent.length];
 						return (
 							<Animated key={item.text} enter={enter} delay={startFrame + i * stagger} distance={50}>
-								<div
+								<TechPanel
+									accent={color}
+									borderAlpha={0.2}
+									fill={0.4}
+									blur={10}
+									radius={RADIUS.md}
+									corners={false}
 									style={{
 										display: 'flex',
 										alignItems: 'center',
 										gap: SPACING.md,
-										background: withAlpha(colors.bg.to, 0.4),
-										border: `1.5px solid ${withAlpha(color, 0.2)}`,
-										borderRadius: RADIUS.md,
 										padding: `${SPACING.sm + 2}px ${SPACING.md}px`,
-										backdropFilter: 'blur(10px)',
 									}}
 								>
 									<div
 										style={{
-											width: MARKER,
-											height: MARKER,
-											flexShrink: 0,
-											borderRadius: ordered ? RADIUS.md : '50%',
-											background: `${color}1A`,
-											border: `1.5px solid ${color}55`,
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'center',
+											...techIconChip(theme, color, {
+												size: MARKER,
+												shape: ordered ? 'rounded' : 'circle',
+											}),
 											fontSize: item.icon ? 30 : FONT_SIZE.subtitle,
 											fontWeight: 900,
 											color,
@@ -112,17 +94,10 @@ export const BulletScene: React.FC<BulletProps> = ({
 									>
 										{item.icon ?? (ordered ? i + 1 : '•')}
 									</div>
-									<div
-										style={{
-											fontSize: ROW_FONT,
-											color: colors.text.primary,
-											fontWeight: 600,
-											lineHeight: 1.5,
-										}}
-									>
+									<div style={{...t.body, fontSize: ROW_FONT, fontWeight: 600, lineHeight: 1.5}}>
 										{item.text}
 									</div>
-								</div>
+								</TechPanel>
 							</Animated>
 						);
 					})}

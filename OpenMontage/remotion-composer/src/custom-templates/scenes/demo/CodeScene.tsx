@@ -120,9 +120,9 @@ export const CodeScene: React.FC<CodeProps> = ({
 					transform: `scale(${interpolate(windowOpacity, [0, 1], [0.97, 1])})`,
 					borderRadius: RADIUS.lg,
 					overflow: 'hidden',
-					boxShadow: '0 40px 120px rgba(0,0,0,0.6), 0 0 1px rgba(255,255,255,0.2) inset',
+					boxShadow: `0 40px 120px rgba(0,0,0,0.6), 0 0 1px rgba(255,255,255,0.2) inset, 0 0 32px -8px ${withAlpha(accent, 0.4)}`,
 					background: colors.codeBg,
-					border: `1px solid ${colors.line}`,
+					border: `1.5px solid ${withAlpha(accent, 0.3)}`,
 					position: 'relative',
 				}}
 			>

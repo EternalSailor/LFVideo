@@ -4,6 +4,8 @@ import {z} from 'zod';
 import {AutoFit} from '../../primitives';
 import {useTheme} from '../../theme/ThemeContext';
 import {withAlpha} from '../../theme/util';
+import {TechPanel, techIconChip} from '../../theme/surfaces';
+import {textStyles} from '../../theme/textStyles';
 import {Animated} from '../../animation';
 import {osc01} from '../../animation/presence';
 import {TRANSITION_IDS, type TransitionId} from '../../animation/types';
@@ -56,7 +58,9 @@ const StepCard: React.FC<{
 }> = ({step, index, color, delay, enter, vertical, tier}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
-	const {colors, FONT_SIZE, SPACING, RADIUS} = useTheme();
+	const theme = useTheme();
+	const {FONT_SIZE, SPACING} = theme;
+	const t = textStyles(theme);
 
 	const ICON = [76, 68, 60][tier];
 	const ICON_FONT = [38, 34, 30][tier];
@@ -65,29 +69,24 @@ const StepCard: React.FC<{
 	const PAD = [SPACING.lg, SPACING.md + 4, SPACING.md][tier];
 
 	const glow = osc01(frame, fps, 5, index * 0.4);
-	const cardBg = withAlpha(colors.bg.to, 0.45);
-	const cardShadow = `0 10px 30px -12px rgba(0,0,0,0.6), 0 0 ${20 * glow}px ${withAlpha(color, 0.12 * glow)}`;
 
 	return (
 		<Animated enter={enter} delay={delay} distance={50} style={{flex: 1, display: 'flex'}}>
-			<div
+			<TechPanel
+				accent={color}
+				glow={glow}
+				borderAlpha={0.33}
+				blur={12}
 				style={{
 					flex: 1,
 					minWidth: vertical ? 560 : 220,
 					minHeight: vertical ? 0 : 320,
-					background: cardBg,
-					border: `1.5px solid ${withAlpha(color, 0.33)}`,
-					borderRadius: RADIUS.lg,
 					padding: `${PAD}px`,
-					backdropFilter: 'blur(12px)',
-					boxShadow: cardShadow,
 					display: 'flex',
 					flexDirection: vertical ? 'row' : 'column',
 					alignItems: vertical ? 'center' : 'flex-start',
 					gap: SPACING.md,
-					textAlign: vertical ? 'left' : 'left',
-					position: 'relative',
-					overflow: 'hidden',
+					textAlign: 'left',
 				}}
 			>
 				<div
@@ -103,41 +102,23 @@ const StepCard: React.FC<{
 				>
 					{index + 1}
 				</div>
-				<div
-					style={{
-						width: ICON,
-						height: ICON,
-						flexShrink: 0,
-						borderRadius: RADIUS.md,
-						background: `${color}18`,
-						border: `1.5px solid ${color}44`,
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						fontSize: ICON_FONT,
-						boxShadow: `0 4px 18px -2px ${color}22`,
-					}}
-				>
+				<div style={{...techIconChip(theme, color, {size: ICON}), fontSize: ICON_FONT}}>
 					{step.icon}
 				</div>
 				<div style={{flex: 1, zIndex: 1}}>
 					<div
 						style={{
+							...t.cardTitle,
 							fontSize: TITLE,
-							fontWeight: 800,
-							color: colors.text.primary,
 							marginBottom: SPACING.xs,
 							lineHeight: 1.2,
-							letterSpacing: -0.5,
 						}}
 					>
 						{step.label}
 					</div>
-					<div style={{fontSize: DESC, color: colors.text.secondary, lineHeight: 1.6}}>
-						{step.desc}
-					</div>
+					<div style={{...t.bodyMuted, fontSize: DESC}}>{step.desc}</div>
 				</div>
-			</div>
+			</TechPanel>
 		</Animated>
 	);
 };
